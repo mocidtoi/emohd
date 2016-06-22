@@ -1,0 +1,262 @@
+* {
+    overflow:hidden;
+}
+
+body {
+    padding-top: 0px;
+    background-color: #444;
+    background-blend-mode: overlay;
+}
+#scrollable {
+/*    padding-top: 70px;*/
+    overflow-y:scroll;
+    overflow-x:visible;
+}
+.margin-top-70 {
+    margin-top:70px;
+}
+.page-content {
+    min-height: 100vh;
+    /*padding-right: 25px;*/
+}
+div.list-group-item.short-leg {
+    padding-bottom: 5px !important;
+}
+.list-group-item i.icon {
+    display:inline;
+}
+
+.list-group-item.item-curtain,
+.list-group-item.item-scene {
+    background:none;
+}
+
+.tabbar-container ul li i.icon {
+    line-height: 1.4;
+    height: 22px;
+}
+.tabbar-container * {
+    overflow: visible;
+}
+
+.list-group-item * {
+    color: rgba(255, 255, 255, .6);
+}
+
+.list-group-item {
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+    background-color: rgba(0,0,0,.2);
+}
+
+.list-group-item.disabled * {
+    color: rgba(255, 255, 255, .2);
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.right-bt.on-off {
+    width: 65px;
+}
+a.right-bt {
+    padding-left: 2em;
+    padding-right: 5px;
+}
+.block-heading a.right-bt {
+    top:auto;
+    bottom: 10px;
+    padding-right: 10px;
+}
+
+.block-heading a {
+    color: white;
+}
+.removeAction {
+    text-align: center;
+    border-bottom: solid 1px rgba(255,255,255,0.2);
+}
+.widget-info li {
+    border: none;
+}
+.widget-content_block {
+    background: rgba(255,255,255, 0.8);
+}
+.glass {
+    /*width: 80%;*/
+    background-color: transparent;
+    border: none;
+}
+.list-group-item input {
+    margin-left:0.5em;
+}
+.glass:focus {
+    outline: none;
+}
+
+.button-group{
+    padding-right: 25px;
+}
+.nav>li.pos-lt {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+.nav>li.pos-rt {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+}
+.nav>li.pos-lb {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+}
+.nav>li.pos-rb {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+}
+.hline {
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background-color: rgb(228, 234, 236);
+    left: 0px;
+    top: 50%;
+}
+.vline {
+    position: absolute;
+    width: 1px;
+    height: 90px;
+    background-color: rgb(228, 234, 236);
+    left: 50%;
+    top: 0px;
+}
+
+.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
+    color: #62a8ea;
+    background-color: rgba(128, 128, 128, 0.2);
+}
+.hide {
+    display: none;
+}
+div.list-group-item.no-background,
+div.list-group-item.no-background:focus,
+div.list-group-item.no-background:active
+ {
+    background-color:transparent;
+}
+.w-percent-80 {
+    width: 80%;
+    margin-left: 0.5em;
+    display: inline-block;
+}
+.t-vmiddle {
+    vertical-align: middle;
+}
+.rounded {
+    padding:4px;
+    border-radius:8px
+}
+.xsmall {
+    font-size: 60%;
+}
+.grid-item * {
+    overflow: visible;
+}
+.grid-item h4 {
+    line-height: 1;
+    font-weight: lighter;
+}
+.grid-item-x2 .grid-title h4 {
+    font-size:14px;
+}
+.grid-item-x2 .icondemo .icon {
+    bottom: -0.8em;
+    right: 0;
+}
+.grid-item.disable{
+    opacity: 0.4;
+}
+.grid-item.disable > .grid-view {
+    border: solid 1px #fff;
+}
+.mytransition {
+    transition: width 1s;
+    -webkit-transition: width 1s;
+}
+.more-list .icon {
+    line-height: 1.5;
+}
+.icon_list .icondemo.bg-glass {
+    background-color: rgba(128, 128, 128, 0.2);
+}
+.icon_list .icondemo.border-glass {
+    border: solid 1px rgba(255,255,255,0.2);
+}
+.notification-item {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-bottom: solid 1px rgba(255,255,255,0.2);
+    font-size: 12px;
+}
+.notification-new {
+    font-style: italic;
+    color: #ddd;
+}
+.pin {
+    position:absolute;
+    right: 0px;
+    top: 0px;
+}
+#volume-bar {
+    padding-bottom: 15px;
+    top: -65px;
+    right: -30px;
+    z-index: 1;
+    border: solid 1px rgba(46,50,78,0.8);
+    background: rgba(23, 25, 39, 1);
+}
+.play-control,
+.play-control * {
+    overflow: visible;
+}
+.loading {
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    z-index: 1600;
+    background-color:rgba(0,0,0,0.6);
+}
+.loading * {
+    overflow:visible;
+}
+/*.top-slider {
+    height: 2em;
+}*/
+.slider-time {
+    vertical-align: bottom;
+}
+.marquee {
+    white-space: nowrap;
+    overflow: hidden;
+    animation: marquee 15s linear infinite;
+}
+@keyframes marquee {
+    0%   { text-indent: 100% }
+    100% { text-indent: -100% }
+}
+.bottom-slider ul li a {
+    font-size: 26px;
+    padding: 3px;
+}
+.bottom-slider ul li a i.icon {
+    line-height: 1.2;
+    vertical-align: middle;
+}
+.bottom-slider ul li a.active{
+    color: #008dd0;
+}

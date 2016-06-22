@@ -1,0 +1,79 @@
+<template name="Scene">
+    <!-- Page -->
+    <div class="page-content container-fluid margin-top-70" style="padding-top: 17px">
+        <div class="row" data-plugin="matchHeight" data-by-row="true">
+            <div class="main-container">
+                <!-- Example List Divider -->
+                <div class="example-wrap">
+                    <div class="clearfix block-heading">
+                        <h4 class="example-title">{{scene.name}}</h4>
+                        <a class="right-bt addBtn" href="#"><i class="icon ti-plus" aria-hidden="true"></i></a>
+                    </div>
+                    <div class="list-group list-group-dividered list-group-full">
+                        {{#each sd in scenedev}}
+                        <a class="list-group-item">
+                            <div class="pull-left">
+                                <a data-action="remove-scenedev" data-id="{{sd.id}}"><i class="icon ti-trash" aria-hidden="true"></i></a>
+                            </div>
+                            <ul class="clearfix group-select">
+                                {{#if sd.devId}}
+                                {{#with device sd.devId}}
+                                <li class="column-1" style="width: 40%;">
+                                    <select class="list-down" data-id="{{sd.id}}">
+                                        {{#each r in rooms}}
+                                        <optgroup label="{{r.name}}">
+                                            {{#each d in devices r.id}}
+                                            <option value="{{d.id}}" {{isSelected sd.devId d.id}}>{{d.name}}</option>
+                                            {{/each}}
+                                        </optgroup>
+                                        {{/each}}
+                                    </select>
+                                </li>
+                                    {{#with room groupId}}
+                                <li class="column-2" style="width: 40%;">
+                                    <input type="text" class="mbsc-control mbsc-control-ev" readonly data-id="{{sd.id}}" data-devId="{{sd.devId}}" value="{{name}}">
+                                </li>
+                                    {{/with}}
+                                <li class="last-column" style="width: 20%">
+                                    <select class="list-down" data-id="{{sd.id}}">
+                                        <option value=1 {{isSelected 1 sd.action}}>turn ON</option>
+                                        <option value=0 {{isSelected 0 sd.action}}>turn OFF</option>
+                                    </select>
+                                </li>
+                                {{/with}}
+                                {{else}}
+                                <li class="column-1" style="width: 40%;">
+                                    <select class="list-down" data-id="{{sd.id}}">
+                                        {{#each r in rooms}}
+                                        <optgroup label="{{r.name}}">
+                                            {{#each d in devices r.id}}
+                                            <option value="{{d.id}}">{{d.name}}</option>
+                                            {{/each}}
+                                        </optgroup>
+                                        {{/each}}
+                                    </select>
+                                </li>
+                                <li class="column-2" style="width: 40%;">
+                                    <input type="text" class="mbsc-control mbsc-control-ev" readonly data-id="{{sd.id}}">
+                                </li>
+                                <li class="last-column" style="width: 20%">
+                                    <select class="list-down" data-id="{{sd.id}}">
+                                        <option value=1 {{isSelected 1 sd.action}}>turn ON</option>
+                                        <option value=0 {{isSelected 0 sd.action}}>turn OFF</option>
+                                    </select>
+                                </li>
+                                {{/if}}
+                            </ul>
+                        </a>
+                        {{/each}}
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn btn-raised btn-danger btn-block">DELETE</button>
+                </div>
+                <!-- End Example List Divider -->
+            </div>
+        </div>
+    </div>
+    <!-- End Page -->
+</template>

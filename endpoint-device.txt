@@ -1,0 +1,29 @@
+SmartIO gangbox's parameters
+#relay  #touch  dry?   
+0       4       0
+1               1
+2
+3
+
+================================
+Endpoint number reference table
+================================
+seq         description     code
+1           0relay          13(0x0D)
+2           1relay-ban      14(0x0E)
+3           1relay-sach     15(0x0F)
+4           2relay-ban      16(0x10)
+5           2relay-sach     17(0x11)
+6           3relay-ban      18(0x12)
+7           3relay-sach     19(0x13)
+
+=================================
+Device type reference table
+=================================
+seq         device      code
+1           light       1
+2           fan         2
+3           curtain     3
+4           tivi        4
+5           aircon      5
+6           heater      6

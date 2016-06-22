@@ -1,0 +1,56 @@
+<template name="Device">
+    <!-- Page -->
+    <div class="page-content container-fluid margin-top-70">
+        <div class="row" data-plugin="matchHeight" data-by-row="true">
+            <div class="main-container">
+                <!-- Example List Divider -->
+                <div class="example-wrap">
+                    <div class="clearfix block-heading">
+                        <h4 class="example-title">Basic Infomation</h4>
+                    </div>
+                    <div class="list-group list-group-dividered list-group-full">
+                        {{#with device}}
+                        <div href="" class="list-group-item">
+                            <input class="glass" id='deviceName' type="text" value="{{name}}" text="{{name}}">
+                        </div>
+                        <div href="" class="list-group-item">
+                            <input class="glass" id='deviceDesc' type="text" text="{{description}}" value="{{description}}" placeholder="Description ...">
+                        </div>
+                        {{/with}}
+                    </div>
+                </div>
+                <div class="example-wrap">
+                    <div class="clearfix block-heading">
+                        <h4 class="example-title">Schedule</h4>
+                        <a id="addTask" href="#" class="right-bt">
+                            <i class="icon ti-plus" aria-hidden="true"></i>
+                        </a>
+                    </div>
+
+                    <div class="list-group list-group-dividered list-group-full">
+                        {{#each tasks}}
+                        <a class="list-group-item wi-del">
+                            <div class="pull-left" data-action='remove-task' data-id="{{id}}">
+                                <i class="icon ti-trash" aria-hidden="true"></i>
+                            </div>
+                            <input type="text" class="time-select timepicker td-input" data-id="{{id}}" placeholder="" value="{{time}}">
+                            <div class="right-bt on-off" data-id="{{id}}">
+                                <select id="action{{id}}" class="list-down">
+                                    <option {{selected action}}>turn ON</option>
+                                    <option {{notSelected action}}>turn OFF</option>
+                                </select>
+                            </div>
+                        </a>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="removeDevice" type="button" class="btn btn-raised btn-danger btn-block">DELETE</button>
+                </div>
+                <!-- End Example List Divider -->
+            </div>
+        </div>
+    </div>
+    <!-- End Page -->
+</template>

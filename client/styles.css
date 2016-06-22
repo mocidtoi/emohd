@@ -1,0 +1,115 @@
+@charset "UTF-8";
+
+@font-face {
+  font-family: "dhome";
+  src:url("fonts/dhome.eot");
+  src:url("fonts/dhome.eot?#iefix") format("embedded-opentype"),
+    url("fonts/dhome.woff") format("woff"),
+    url("fonts/dhome.ttf") format("truetype"),
+    url("fonts/dhome.svg#dhome") format("svg");
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+[data-icon]:before {
+  font-family: "dhome" !important;
+  content: attr(data-icon);
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[class^="dicon-"]:before,
+[class*=" dicon-"]:before {
+  font-family: "dhome" !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dicon-aircon:before {
+  content: "\61";
+}
+.dicon-light:before {
+  content: "\67";
+}
+.dicon-curtain:before {
+  content: "\65";
+}
+.dicon-light-1:before {
+  content: "\68";
+}
+.dicon-fan:before {
+  content: "\66";
+}
+.dicon-sound:before {
+  content: "\64";
+}
+.dicon-tv:before {
+  content: "\6d";
+}
+.dicon-fav:before {
+  content: "\6e";
+}
+.dicon-sleep-lamp:before {
+  content: "\6f";
+}
+.dicon-cup:before {
+  content: "\6f";
+}
+.dicon-notification:before {
+  content: "\62";
+}
+.dicon-power:before {
+  content: "\63";
+}
+.dicon-settings-1:before {
+  content: "\6a";
+}
+.dicon-more:before {
+  content: "\6c";
+}
+.dicon-back:before {
+  content: "\69";
+}
+.dicon-plus:before {
+  content: "\71";
+}
+.dicon-plus-circled:before {
+  content: "\72";
+}
+.dicon-plus:before {
+  content: "\71";
+}
+.dicon-refresh:before {
+  content: "\70";
+}
+.dicon-clk-syn:before {
+  content: "\73";
+}
+.dicon-edit:before {
+  content: "\76";
+}
+.dicon-netatmo:before {
+  content: "\6b";
+}
+.dicon-home:before {
+  content: "\74";
+}
+.dicon-favorite:before {
+  content: "\75";
+}
+.dicon-scene:before {
+  content: "\77";
+}

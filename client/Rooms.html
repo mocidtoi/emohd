@@ -1,0 +1,33 @@
+<template name="Rooms">
+    <div class="page-content container-fluid margin-top-70">
+        <div class="row" data-plugin="matchHeight" data-by-row="true">
+            <div class="main-container">
+                <!-- Begin group -->
+                {{#each group}}
+                <div class="example-wrap">
+                    <div class="clearfix block-heading">
+                        <h4 class="example-title">{{name}}</h4>
+                        <a class="right-bt" href="#" data-toggle="modal" data-target="#add_device" data-room-id="{{id}}"><i class="icon ti-plus" aria-hidden="true"></i></a>
+                    </div>
+                    <div class="list-group list-group-dividered list-group-full">
+                        <!-- Begin item -->
+                        {{#each device id}}{{#if removable}}
+                        <a class="col-xs-12 removeAction" data-room-id="{{roomId}}">DELETE</a>
+                        {{else}}
+                        <div class="list-group-item short-leg {{statusClass type id}}" data-id="{{id}}" data-name={{name}}>
+                            <i class="icon fonta dicon-{{icon type}} wb-inbox"></i><span>{{name}}</span>
+                            <a href="/Device/{{groupId}}/{{id}}" style="z-index:10" class="right-bt">
+                                <i class="icon ti-angle-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        {{/if}}{{/each}}
+                        <!-- End item -->
+                    </div>
+                </div>
+                {{/each}}
+                <!-- End group -->
+            </div>
+        </div>
+    </div>
+</template>
+

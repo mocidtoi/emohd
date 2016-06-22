@@ -1,0 +1,23 @@
+<template name="Scenes">
+    <div class="page-content container-fluid margin-top-70" style="padding-top:17px">
+        <div class="row" data-plugin="matchHeight" data-by-row="true">
+            <div class="main-container">
+                <div class="example-wrap">
+                    <div class="list-group list-group-dividered list-group-full">
+                        <div class="list-group-item short-leg no-background" data-id="-1">
+                            <i class="icon fonta dicon-power wb-inbox"></i><span>Power off</span>
+                        </div>
+                        {{#each scene}}
+                        <div class="list-group-item short-leg no-background" data-id="{{id}}">
+                            <i class="icon fonta dicon-scene wb-inbox"></i><span>{{name}}</span>
+                            <a href="/Scene/{{id}}"  class="right-bt">
+                                <i class="icon ti-angle-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,88 @@
+<head>
+  <title>emohd</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+  <script src='/hack.js'></script>
+</head>
+<body class="dashboard">
+  <script src='/packery/js/packery.pkgd.js'></script>
+  <script src="/mobiscroll.js"></script>
+  <script src="/jquery.rippler.min.js"></script>
+  <script src="/nouislider.min.js"></script>
+</body>
+
+<template name="ApplicationLayout">
+    <div id="scrollable" style="width:103%;height:100%;overflow:scroll;">
+        <nav class="site-navbar navbar navbar-inverse navbar-fixed-top navbar-mega nav-down" role="navigation">
+            <div class="navbar-header">
+                {{>yield "leftNav"}}
+                <div class="navbar-brand navbar-brand-center site-gridmenu-toggle" data-toggle="gridmenu">
+                    <a href="#" style="color: #fff;">{{title}}</a>
+                </div>
+                {{>yield "rightNav"}}
+            </div>
+        </nav>
+        {{>yield "widget"}}
+        <div class="transitions-container">
+            {{>yield}}
+        </div>
+        {{>TabBar}}
+        {{>yield "player"}}
+    </div>
+    {{>yield "modal-addroom"}}
+    {{>yield "modal-adddev"}}
+    {{>yield "modal-addscene"}}
+    {{>yield "modal-config"}}
+    {{>yield "modal-curtain"}}
+    {{>ModalConfirm}}
+    {{>LoadingScreen}}
+    {{>ModalSettings}}
+</template>
+
+<template name="Blank">
+</template>
+
+<template name="LoadingScreen1">
+    <div class="loading">
+        {{>spinner}}
+    </div>
+</template>
+<template name="LoadingScreen">
+    <div class="loading {{connStatus}}">
+        {{>spinner}}
+        <div style=" position: absolute; top: 55%; width: 100%; text-align: center;">
+            <span style="width: 100%;font-weight:lighter;clear:both;display:block" class="white">{{message}}</span>
+            <h4><a style="font-weight:lighter;text-decoration:underline" class="white" href="#" data-toggle="modal" data-target="#modal-settings">Server settings</a></h4>
+        </div>
+    </div>
+</template>
+
+<template name="BackBtn">
+    <button type="button" class="navbar-toggle navbar-toggle-left hided" data-toggle="menubar" onclick="history.back();">
+        <i class="icon dicon-back" aria-hidden="true"></i>
+    </button>
+</template>
+
+<template name="AddBtn">
+    <button type="button" class="navbar-toggle collapsed" data-toggle="modal" data-target="#{{modal}}">
+        <i class="icon ti-plus" aria-hidden="true"></i>
+    </button>
+</template>
+
+<template name="SaveBtn">
+    <button type="button" class="navbar-toggle collapsed {{hide}}">
+        <span style="color:#ffc; font-size:17px;">Save</span>
+    </button>
+</template>
+
+<template name="SettingsBtn">
+    <button type="button" data-action="Kodi" class="navbar-toggle collapsed">
+        <span style="color:#fff; font-size:20px" class="ti-settings"></span>
+    </button>
+</template>
+
+<template name="CancelBtn">
+    <button type="button" class="navbar-toggle navbar-toggle-left" data-toggle="menubar">
+        <a href="{{back}}" style="color:#fff; font-size:17px">Back</a>
+    </button>
+</template>

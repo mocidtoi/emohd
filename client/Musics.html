@@ -1,0 +1,27 @@
+<template name="Musics">
+    <div class="page-content container-fluid margin-top-70" style="padding-right:25px">
+        <div class="row" data-plugin="matchHeight" data-by-row="true">
+            <div class="main-container">
+                <!-- Example List Divider -->
+                <div class="example-wrap">
+                    <div class="clearfix block-heading">
+                        <h4 class="example-title">Song list ({{songCount}})</h4>
+                        <a id='reload' class="right-bt" href="#"><span class="glyphicon glyphicon-repeat"></span></a>
+                    </div>
+                    <div class="list-group list-group-dividered list-group-full">
+                        {{#each songs}}
+                        <a class="list-group-item" data-songId="{{id}}" data-songIdx={{@index}}>
+                            <span>{{title}}</span>
+                            <div class="right-bt">
+                                <i class="icon {{isPlaying id}}" aria-hidden="true"></i>
+                            </div>
+                        </a>
+                        {{/each}}
+                    </div>
+                </div>
+                <!-- End Example List Divider -->
+            </div>
+        </div>
+    </div>
+
+</template>

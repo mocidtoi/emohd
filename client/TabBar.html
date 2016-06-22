@@ -1,0 +1,42 @@
+<template name="TabBar">
+    <div class="tabbar-container container-fluid">
+        <div class="row">
+            <div class="">
+                <ul id="tabbar" class="clearfix">
+                    <li>
+                        <a class="{{active_1}}" href="/Favorites">
+                            <i class="icon fonta dicon-favorite"></i>
+                            <span>Favorites</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="{{active_2}}" href="/Rooms">
+                            <i class="icon fonta dicon-home"></i>
+                            <span>Rooms</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="{{active_3}}" href="/Scenes">
+                        <!--<a class="{{active_3}}" href="/Device/1/3">-->
+                            <i class="icon dicon-scene"></i>
+                            <span>Scenes</span>
+                        </a>
+                    </li>
+                    <li style="position:relative">
+                        <a class="{{active_4}}" href="/Notifications">
+                            <i class="icon fonta dicon-notification"></i>
+                            <span class="pin badge bg-danger bg-red-800 {{hideBadge}}"><small>{{notificationCount}}</small></span>
+                            <span>Notifications</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="{{active_5}}" href="/More">
+                            <i data-icon="l" class="icon fonta"></i>
+                            <span>More</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>

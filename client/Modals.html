@@ -1,0 +1,124 @@
+<template name="ModalAddRoom">
+    <div class="modal fade" id="{{modalId}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document" style="margin-top:50%">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">New room</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="sr-only" for="inputRoomName">Room name</label>
+                        <input type="text" class="form-control" id="inputRoomName" placeholder="Room name">
+                    </div>
+                </div>
+                <div class="modal-footer container">
+                    <button id="ok" type="button" class="col-xs-12 btn btn-primary" data-dismiss="modal">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<template name="ModalAddScene">
+    <div class="modal fade" id="{{modalId}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document" style="margin-top:50%">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">New scene</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="sr-only" for="inputSceneName">Scene name</label>
+                        <input type="text" class="form-control" id="inputSceneName" placeholder="Scene name">
+                    </div>
+                </div>
+                <div class="modal-footer container">
+                    <button id="ok" type="button" class="col-xs-12 btn btn-primary" data-dismiss="modal">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<template name="ModalConfig">
+    <div class="modal fade" id="{{modalId}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document" style="margin-top:50%">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">{{dialogName}}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="{{dialogName}}IP" placeholder="{{dialogName}} IP">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="{{dialogName}}User" placeholder="{{dialogName}} user">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="{{dialogName}}Password" placeholder="{{dialogName}} password">
+                    </div>
+                </div>
+                <div class="modal-footer container">
+                    <button id="{{dialogName}}Ok" type="button" class="col-xs-12 btn btn-primary" data-dismiss="modal">Set</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<template name="ModalCurtainControl">
+    <div class="modal fade" id="curtain-control" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document" style="margin-top:25%">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">{{curtainName}}</h4>
+                </div>
+                <div class="modal-body container">
+                    <div class="col-xs-12" style="padding:3px">
+                        <button id="curtain-up" style="overflow:hidden" class="col-xs-offset-2 col-xs-8 btn rippler-inverse">
+                            <span style="font-weight: bold;line-height: 1.05em;font-size: 30px;color: black;padding: 12px 5px;" class="ti-arrow-circle-up"></span>
+                        </button>
+                    </div>
+                    <div class="col-xs-12" style="padding:3px">
+                        <button id="curtain-stop" style="overflow:hidden" class="col-xs-offset-2 col-xs-8 btn rippler-inverse">
+                            <span style="font-weight: bold;line-height: 1.05em;font-size: 30px;color: black;padding: 12px 5px;" class="ti-control-stop"></span>
+                        </button>
+                    </div>
+                    <div class="col-xs-12" style="padding:3px">
+                        <button id="curtain-down" style="overflow:hidden" class="col-xs-offset-2 col-xs-8 btn rippler-inverse">
+                            <span style="font-weight: bold;line-height: 1.05em;font-size: 30px;color: black;padding: 12px 5px;" class="ti-arrow-circle-down"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:solid 1px #ccc; padding:10px; margin-top:20px">
+                    <span style="font-style:italic; color:#888">Control your curtain</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<template name="ModalSettings">
+    <div class="modal fade" id="{{modalId}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document" style="margin-top:50%">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Settings</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="dhomeIP" placeholder="Server IP">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="dhomePort" placeholder="Server Port">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="dhomeKey" placeholder="Server Key">
+                    </div>
+                </div>
+                <div class="modal-footer container">
+                    <button id="settingsOk" type="button" class="col-xs-12 btn btn-primary">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
