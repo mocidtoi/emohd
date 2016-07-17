@@ -1,6 +1,7 @@
 Template.Scenes.onRendered(function() {
     Session.set('title', "Scenes");
 });
+Template.Scenes.helpers(PageHelpers);
 Template.Scenes.helpers({
     scene: function() {
         return Scene.find({}).fetch();

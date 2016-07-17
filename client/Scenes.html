@@ -1,11 +1,11 @@
 <template name="Scenes">
-    <div class="page-content container-fluid margin-top-70" style="padding-top:17px">
+    <div class="page-content container-fluid margin-top-{{top_margin}}" style="padding-top:17px">
         <div class="row" data-plugin="matchHeight" data-by-row="true">
             <div class="main-container">
                 <div class="example-wrap">
                     <div class="list-group list-group-dividered list-group-full">
                         <div class="list-group-item short-leg no-background" data-id="-1">
-                            <i class="icon fonta dicon-power wb-inbox"></i><span>Power off</span>
+                            <i class="icon fonta dicon-power wb-inbox"></i><span>{{_ "TURN OFF ALL"}}</span>
                         </div>
                         {{#each scene}}
                         <div class="list-group-item short-leg no-background" data-id="{{id}}">

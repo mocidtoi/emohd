@@ -4,11 +4,35 @@ import { Meteor } from 'meteor/meteor';
 
 import './main.html';
 
+Meteor.startup(function(){
+    var language = window.localStorage.getItem("__lang");
+//    alert("Language:" + language);
+    if(!language) {
+        language = 'vn';
+        window.localStorage.setItem("__lang", language);
+    }
+    TAPi18n.setLanguage(language).done(function() {
+//        alert("Set Language:" + language);
+        console.log('Set language ' + language);
+    }).fail(function() {
+//        alert("Failed in Set language:" + language);
+        console.log('Failed to set language ' + language);
+    });
+
+    Meteor.apply('syncClock', [Date.now()], {wait:false}, function(err, res) {
+        console.log(err);
+        console.log(res);
+    });
+});
+
 configNotifier();
 
 Template.ApplicationLayout.helpers({
     title: function() {
         return Session.get("title");
+    },
+    has_widget: function() {
+        return Session.get("has-widget");
     }
 });
 Template.ApplicationLayout.events({
@@ -93,21 +117,89 @@ Template.AddBtn.helpers({
 });
 
 
-Template.LoadingScreen.onRendered(function() {
-    Template.LoadingScreen.oldTitle = Session.get('title');
+Template.LoadingScreen1.onRendered(function() {
+    Session.set('loading', true);
 });
+
+Template.LoadingScreen1.onDestroyed(function() {
+    Session.set('loading', false);
+});
+
+Template.LoadingScreen.helpers({
+    hide: function() {
+        return (Session.get('loading'))?"hide":"";
+    }
+});
+
+var loadingEventHandlers = {
+    'click #reconnect': function(event, instance) {
+        if(Meteor.isCordova) {
+            zeroconf_discover(function(error, res) {
+                if(!error) {
+                    reconfigServer('http://' + res.ip + ":" + res.port + "/");
+                }
+            });
+        }
+    },
+    'click #scan': function(event, instance) {
+        if(Meteor.isCordova) {
+            cordova.plugins.barcodeScanner.scan(
+                function (result) {
+                    if(result.text) {
+                        var configJSON = JSON.parse(result.text);
+                        if(configJSON.root_url && configJSON.token) {
+                            zeroconf_discover(function(error, res) {
+                                if(!error) {
+                                    reconfigServer('http://' + res.ip + ":" + res.port + "/", configJSON.token);
+                                }
+                            });
+                        }
+                        else {
+                            alert("We got a barcode\n" +
+                                "Result: " + result.text + "\n" +
+                                "Format: " + result.format + "\n" +
+                                "Cancelled: " + result.cancelled);
+                        }
+                    }
+                    else {
+                        alert("We got a barcode\n" +
+                            "Result: " + result.text + "\n" +
+                            "Format: " + result.format + "\n" +
+                            "Cancelled: " + result.cancelled);
+                    }
+                }, 
+                function (error) {
+                    alert("Scanning failed: " + error);
+                }
+            );
+        }
+    }
+};
+
+Template.LoadingScreen.events(loadingEventHandlers);
+Template.LoadingScreen1.events(loadingEventHandlers);
 
 Template.LoadingScreen.helpers({
     connStatus: function() {
         if (!Meteor.status().connected) {
-            Session.set('status-message', 'Cannot connect to server');
-            Session.set('title', 'Loading ...');
+            Session.set('status-message', 'Connecting to DHome');
             return "";
         }
-        Session.set('title', Template.LoadingScreen.oldTitle);
         return "hide";
     },
     message: function() {
-        return Session.get('status-message');
+        return TAPi18n.__(Session.get('status-message'));
+    },
+    isCordova: function() {
+        return Meteor.isCordova;
+    }
+});
+
+Template.LoadingScreen1.helpers({
+    isCordova: function() {
+        return Meteor.isCordova;
+    },
+    message: function() {
+        return TAPi18n.__(Session.get('status-message'));
     }
 });

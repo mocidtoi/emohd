@@ -6,7 +6,7 @@
                 <!-- Example List Divider -->
                 <div class="example-wrap">
                     <div class="clearfix block-heading">
-                        <h4 class="example-title">Basic Infomation</h4>
+                        <h4 class="example-title">{{_ "basicInfo"}}</h4>
                     </div>
                     <div class="list-group list-group-dividered list-group-full">
                         {{#with device}}
@@ -14,14 +14,14 @@
                             <input class="glass" id='deviceName' type="text" value="{{name}}" text="{{name}}">
                         </div>
                         <div href="" class="list-group-item">
-                            <input class="glass" id='deviceDesc' type="text" text="{{description}}" value="{{description}}" placeholder="Description ...">
+                            <input class="glass" id='deviceDesc' type="text" text="{{description}}" value="{{description}}" placeholder='{{_ "description"}}'>
                         </div>
                         {{/with}}
                     </div>
                 </div>
                 <div class="example-wrap">
                     <div class="clearfix block-heading">
-                        <h4 class="example-title">Schedule</h4>
+                        <h4 class="example-title">{{_ "schedule"}}</h4>
                         <a id="addTask" href="#" class="right-bt">
                             <i class="icon ti-plus" aria-hidden="true"></i>
                         </a>
@@ -36,8 +36,8 @@
                             <input type="text" class="time-select timepicker td-input" data-id="{{id}}" placeholder="" value="{{time}}">
                             <div class="right-bt on-off" data-id="{{id}}">
                                 <select id="action{{id}}" class="list-down">
-                                    <option {{selected action}}>turn ON</option>
-                                    <option {{notSelected action}}>turn OFF</option>
+                                    <option {{selected action}}>{{_ "turnon"}}</option>
+                                    <option {{notSelected action}}>{{_ "turnoff"}}</option>
                                 </select>
                             </div>
                         </a>
@@ -46,7 +46,7 @@
                 </div>
 
                 <div class="button-group">
-                    <button id="removeDevice" type="button" class="btn btn-raised btn-danger btn-block">DELETE</button>
+                    <button id="removeDevice" type="button" class="btn btn-raised btn-danger btn-block">{{_ "delete"}}</button>
                 </div>
                 <!-- End Example List Divider -->
             </div>

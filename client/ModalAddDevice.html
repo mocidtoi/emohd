@@ -16,7 +16,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button id="configure" type="button" class="{{showConfig}} btn btn-raised btn-block btn-primary">Next <span class="glyphicon glyphicon-chevron-right"></span></button>
+                    <button id="configure" type="button" class="{{showConfig}} btn btn-raised btn-block btn-primary">{{_ "Next"}} <span class="glyphicon glyphicon-chevron-right"></span></button>
                 </div>
             </div>
         </div>
@@ -43,45 +43,50 @@
     </div>
 </template>
 
+<template name="Body1Gang">
+    <div class="tab-content">
+        {{#each modules}}
+        <div id="gang{{index}}" class="tab-pane fade">
+            {{>yield region}}
+        </div>
+        {{/each}}
+    </div>
+</template>
+
 <template name="FragmentAdd">
     <form id="form-{{index}}" data-idx="{{index}}">
         {{#if found}}
             <div class="form-group text-right">
                 <label style="width: 15%" class="text-center t-vmiddle">
-                    <i id="icon-{{index}}" style="font-size: 24px" class="dicon-{{icon.icon}}"></i>
+                    <i id="icon-{{index}}" style="font-size: 24px" class="dicon-light" data-value="0"></i>
                 </label>
-                <input type='text' class="text-left form-control w-percent-80" value="{{icon.title}}" readonly>
+                <input type='text' class="text-left form-control w-percent-80" value="Light" readonly>
             </div>
             <div class="form-group text-right">
-                <label class="t-vmiddle">Name</label>
-                <input type="text" class="gangname form-control w-percent-80" placeholder="Switch name" value="{{foundName}}" readonly>
+                <label class="t-vmiddle">{{_ "Name"}}</label>
+                <input type="text" class="gangname form-control w-percent-80" placeholder={{_ "Button name"}} value="{{foundName}}" readonly>
             </div>
             <div class="form-group text-right">
-                <label class="t-vmiddle">Room</label>
-                <input type="text" class="form-control w-percent-80" placeholder="Room name" readonly value="{{roomName}}">
+                <label class="t-vmiddle">{{_ "Room"}}</label>
+                <input type="text" class="form-control w-percent-80" readonly value="{{roomName}}">
             </div>
-            <button type="button" data-idx="{{index}}" disabled class="{{showAdd}} btn btn-block btn-primary addBtn">Add button #{{index}}</button>
+            <button type="button" data-idx="{{index}}" disabled class="{{showAdd}} btn btn-block btn-primary addBtn">{{_ "Add"}} {{_ "button"}} #{{index}}</button>
         {{else}}
             <div class="form-group text-right">
                 <label style="width: 15%" class="text-center t-vmiddle">
-                    <i id="icon-{{index}}" style="font-size: 24px" class="dicon-{{icon.icon}}"></i>
+                    <i id="icon-{{index}}" style="font-size: 24px" class="dicon-light" data-value="0"></i>
                 </label>
-                <select name="devtype" class="list_group list-down">
-                    <option value="-1">choose ...</option>
-                    {{#each devTypes}}
-                    <option value="{{@index}}">{{title}}</option>
-                    {{/each}}
-                </select>
+                <input type='text' class="text-left form-control w-percent-80" value={{_ "Light button"}} readonly>
             </div>
             <div class="form-group text-right">
-                <label class="t-vmiddle">Name</label>
-                <input type="text" class="gangname form-control w-percent-80" placeholder="Switch name" required>
+                <label class="t-vmiddle">{{_ "Name"}}</label>
+                <input type="text" class="gangname form-control w-percent-80" placeholder={{_ "Button name"}} required>
             </div>
             <div class="form-group text-right">
-                <label class="t-vmiddle">Room</label>
-                <input type="text" class="form-control w-percent-80" placeholder="Room name" readonly value="{{roomName}}">
+                <label class="t-vmiddle">{{_ "Room"}}</label>
+                <input type="text" class="form-control w-percent-80" readonly value="{{roomName}}">
             </div>
-            <button type="button" data-idx="{{index}}" data-btnIdx="{{btnIdx}}" class="{{showAdd}} btn btn-block btn-primary addBtn">Add button #{{index}}</button>
+            <button type="button" data-idx="{{index}}" data-btnIdx="{{btnIdx}}" class="{{showAdd}} btn btn-block btn-primary addBtn">{{_ "Add"}} {{_ "button"}} #{{index}}</button>
         {{/if}}
     </form>
 </template>
@@ -89,50 +94,51 @@
 <template name="FragmentAddCurtain">
     <div class="form-group text-right">
         <label style="width: 15%" class="text-center t-vmiddle">
-            <i id="icon-0" style="font-size: 24px" class="dicon-curtain" data-value="4"></i>
+            <i id="icon-0" style="font-size: 24px" class="dicon-curtain" data-value="2"></i>
         </label>
-        <input type='text' class="text-left form-control w-percent-80" value="Curtain" readonly>
+        <input type='text' class="text-left form-control w-percent-80" value={{_ "Curtain"}} readonly>
     </div>
     <div class="form-group text-right">
-        <label class="t-vmiddle">Name</label>
-        <input type="text" class="gangname form-control w-percent-80" placeholder="Switch name" required>
+        <label class="t-vmiddle">{{_ "Name"}}</label>
+        <input type="text" class="gangname form-control w-percent-80" placeholder={{_ "Button name"}} required>
     </div>
     <div class="form-group text-right">
-        <label class="t-vmiddle">Room</label>
-        <input type="text" class="form-control w-percent-80" placeholder="Room name" readonly value="{{roomName}}">
+        <label class="t-vmiddle">{{_ "Room"}}</label>
+        <input type="text" class="form-control w-percent-80" readonly value="{{roomName}}">
     </div>
-    <button type="button" class="btn btn-block btn-primary addBtn" data-idx="{{index}}" data-btnIdx="{{btnIdx}}">Add curtain</button>
+    <button type="button" class="btn btn-block btn-primary addBtn" data-idx="{{index}}" data-btnIdx="{{btnIdx}}">{{_ "Add"}} {{_ "curtain"}}</button>
 </template>
 
 <template name="FragmentAddScene">
     <div class="form-group text-right">
         <label style="width: 15%" class="text-center t-vmiddle">
-            <i id="icon-{{index}}" style="font-size: 24px" class="dicon-scene" data-value="5"></i>
+            <i id="icon-{{index}}" style="font-size: 24px" class="dicon-scene" data-value="1"></i>
         </label>
-        <input type='text' class="text-left form-control w-percent-80" value="Command" readonly>
+        <input type='text' class="text-left form-control w-percent-80" value={{_ "Command"}} readonly>
     </div>
     <div class="form-group text-right">
-        <label class="t-vmiddle">Scene</label>
+        <label class="t-vmiddle">{{_ "Scene"}}</label>
         <select name="scene" class="list_group list-down">
-            <option value="-1">Turn OFF all</option>
+            <option value="-2">[{{_ "Choose ..."}}]</option>
+            <option value="-1">{{_ "TURN OFF ALL"}}</option>
             {{#each scenes}}
             <option value="{{id}}">{{name}}</option>
             {{/each}}
         </select>
     </div>
     <div class="form-group text-right">
-        <label class="t-vmiddle">Room</label>
+        <label class="t-vmiddle">{{_ "Room"}}</label>
         <input type="text" class="form-control w-percent-80" placeholder="Room name" readonly value="{{roomName}}">
     </div>
-    <button type="button" class="btn btn-block btn-primary addBtn" data-idx="{{index}}" data-btnIdx="{{btnIdx}}">Add command button</button>
+    <button type="button" class="btn btn-block btn-primary addBtn" data-idx="{{index}}" data-btnIdx="{{btnIdx}}">{{_ "Add"}} {{_ "command button"}}</button>
 </template>
 <template name="HeaderTitle">
-    <h5>Choose your touch switch</h5>
+    <h4>{{_ "Choose switch type"}}</h4>
 </template>
 <template name="Header4Gang">
     <ul class="nav nav-pills" style="position: relative; text-align: center; height: 90px;">
         {{#each modules}}
-        <li class="{{pos}}"><a data-toggle="pill" data-index="{{index}}" href="#gang{{index}}">Button {{index}}</a></li>
+        <li class="{{pos}}"><a data-toggle="pill" data-index="{{index}}" href="#gang{{index}}">{{_ "Button"}} {{index}}</a></li>
         {{/each}}
         <div class="hline"></div>
         <div class="vline"></div>
@@ -142,23 +148,29 @@
 <template name="Header2Gang">
     <ul class="nav nav-pills" style="position: relative; text-align: center; height: 45px;">
         {{#each modules}}
-        <li class="{{pos}}"><a data-toggle="pill" data-index="{{index}}" href="#gang{{index}}">Button {{index}}</a></li>
+        <li class="{{pos}}"><a data-toggle="pill" data-index="{{index}}" href="#gang{{index}}">{{_ "Button"}} {{index}}</a></li>
         {{/each}}
         <div class="vline"></div>
     </ul>
 </template>
 
+<template name="Header1Gang">
+    <ul class="nav nav-pills">
+        <li style="width:100%" class="text-center"><a data-toggle="pill" data-index="0" href="#gang0">{{_ "Button"}}</a></li>
+    </ul>
+</template>
+
 <template name="HeaderCurtain">
     <ul class="nav nav-pills">
-        <li style="width:100%" class="text-center"><a data-toggle="pill" data-index="0" href="#gang0">Curtain</a></li>
+        <li style="width:100%" class="text-center"><a data-toggle="pill" data-index="0" href="#gang0">{{_ "Curtain"}}</a></li>
     </ul>
 </template>
 
 <template name="HeaderCurtainSwitch">
     <ul class="nav nav-pills" style="position: relative; text-align: center; height: 90px;">
-        <li style="width:100%" class="pos-lt active"><a data-toggle="pill" data-index="0" href="#curtain">Curtain</a></li>
-        <li class="col-xs-6 pos-lb"><a data-toggle="pill" data-index="2" href="#gang2">Button 2</a></li>
-        <li class="col-xs-6 pos-rb"><a data-toggle="pill" data-index="3" href="#gang3">Button 3</a></li>
+        <li style="width:100%" class="pos-lt active"><a data-toggle="pill" data-index="0" href="#curtain">{{_ "Curtain"}}</a></li>
+        <li class="col-xs-6 pos-lb"><a data-toggle="pill" data-index="2" href="#gang2">{{_ "Button"}} 2</a></li>
+        <li class="col-xs-6 pos-rb"><a data-toggle="pill" data-index="3" href="#gang3">{{_ "Button"}} 3</a></li>
         <div class="hline"></div>
         <div class="vline" style="height: 50%;top:50%"></div>
     </ul>
@@ -166,17 +178,21 @@
 
 <template name="BodyStage1">
     <div class="form-group">
-        <h4 class="text-left">(1) Choose your switch,</h4>
-        <h4 class="text-left">(2) reset a Smart IO gang box,</h4> 
-        <h4>(3) then press "Next"</h4>
+        <h4 class="text-left">(1) {{_ "Choose switch type"}},</h4>
+        <h4 class="text-left">(2) {{_ "reset your Smart IO box"}},</h4> 
+        <h4>(3) {{_ "then press"}} "{{_ "Next"}}"</h4>
     </div>
-    <div class="form-group">
+    <div class="form-group"> <!-- Check eventDDP.js check "Notifier.addListener('joininfo', function(message) { ... } for correct order of gang-type -->
         <select name="gangtype" class="list_group list-down">
-            <option value="-1">choose gang type ...</option>
-            <option value="0">4-gang switch</option>
-            <option value="1">2-gang switch</option>
-            <option value="2">Curtain-2</option>
-            <option value="3">Curtain-2, switch-2</option>
+            <option value="-1">{{_ "choose switch type"}} ...</option>
+            <option value="0">{{_ "2-light 2-scene switch"}}</option>
+            <option value="1">{{_ "3-light 1-scene switch"}}</option>
+            <option value="2">{{_ "4-scene switch"}}</option>
+            <option value="3">{{_ "2-light switch"}}</option>
+            <option value="4">{{_ "2-scene switch"}}</option>
+            <option value="5">{{_ "1-light switch"}}</option>
+            <option value="6">{{_ "1-scene switch"}}</option>
+            <option value="7">{{_ "2-way curtain switch"}}</option>
         </select>
     </div>
 </template>
@@ -187,7 +203,7 @@
             {{#if hasSwitchFree}}
                 {{>yield "curtain"}}
             {{else}}
-                <p class="text-justify">Cannot setup a curtain since there are not enough available relays</p>
+                <p class="text-justify">{{_ "Cannot setup a curtain since there are not enough available relays"}}</p>
                 <button type="button" data-idx="0" disabled class="btn btn-block btn-primary addBtn">Add curtain</button>
             {{/if}}
         </div>

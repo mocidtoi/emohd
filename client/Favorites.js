@@ -28,6 +28,7 @@ Template.Favorites.onRendered(function() {
 Template.Favorites.onDestroyed(function() {
     if(handle) handle.stop();
 });
+Template.Favorites.helpers(PageHelpers);
 Template.Favorites.helpers({
     tileColor: function(devType) {
         return IconList[devType].color;

@@ -4,16 +4,16 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">New room</h4>
+                    <h4 class="modal-title" id="myModalLabel">{{_ "New room"}}</h4>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
                         <label class="sr-only" for="inputRoomName">Room name</label>
-                        <input type="text" class="form-control" id="inputRoomName" placeholder="Room name">
+                        <input type="text" class="form-control" id="inputRoomName" placeholder={{_ "Room name"}}>
                     </div>
                 </div>
                 <div class="modal-footer container">
-                    <button id="ok" type="button" class="col-xs-12 btn btn-primary" data-dismiss="modal">Add</button>
+                    <button id="ok" type="button" class="col-xs-12 btn btn-primary" data-dismiss="modal">{{_ "Add"}}</button>
                 </div>
             </div>
         </div>
@@ -25,16 +25,16 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">New scene</h4>
+                    <h4 class="modal-title" id="myModalLabel">{{_ "New scene"}}</h4>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="sr-only" for="inputSceneName">Scene name</label>
-                        <input type="text" class="form-control" id="inputSceneName" placeholder="Scene name">
+                        <label class="sr-only" for="inputSceneName">{{_ "Scene name"}}</label>
+                        <input type="text" class="form-control" id="inputSceneName" placeholder={{_ "Scene name"}}>
                     </div>
                 </div>
                 <div class="modal-footer container">
-                    <button id="ok" type="button" class="col-xs-12 btn btn-primary" data-dismiss="modal">Add</button>
+                    <button id="ok" type="button" class="col-xs-12 btn btn-primary" data-dismiss="modal">{{_ "Add"}}</button>
                 </div>
             </div>
         </div>
@@ -45,17 +45,17 @@
         <div class="modal-dialog" role="document" style="margin-top:50%">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">{{dialogName}}</h4>
+                    <h4 class="modal-title">{{_ dialogName}}</h4>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <input type="text" class="form-control" id="{{dialogName}}IP" placeholder="{{dialogName}} IP">
+                        <input type="text" class="form-control" id="{{dialogName}}IP" placeholder="{{_ dialogName}} IP">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" id="{{dialogName}}User" placeholder="{{dialogName}} user">
+                        <input type="text" class="form-control" id="{{dialogName}}User" placeholder="{{_ dialogName}} user">
                     </div>
                     <div class="form-group">
-                        <input type="text" class="form-control" id="{{dialogName}}Password" placeholder="{{dialogName}} password">
+                        <input type="text" class="form-control" id="{{dialogName}}Password" placeholder="{{_ dialogName}} password">
                     </div>
                 </div>
                 <div class="modal-footer container">
@@ -91,7 +91,7 @@
                     </div>
                 </div>
                 <div class="modal-footer" style="border-top:solid 1px #ccc; padding:10px; margin-top:20px">
-                    <span style="font-style:italic; color:#888">Control your curtain</span>
+                    <span style="font-style:italic; color:#888">{{_ "Control your curtain"}}</span>
                 </div>
             </div>
         </div>
@@ -102,7 +102,7 @@
         <div class="modal-dialog" role="document" style="margin-top:50%">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Settings</h4>
+                    <h4 class="modal-title">{{_ "DHome server settings"}}</h4>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
@@ -116,7 +116,10 @@
                     </div>
                 </div>
                 <div class="modal-footer container">
-                    <button id="settingsOk" type="button" class="col-xs-12 btn btn-primary">Ok</button>
+                    <div class="col-xs-12 btn-group">
+                        <button id="discover" type="button" class="col-xs-5 btn btn-default">{{_ "Search"}}</button>
+                        <button id="settingsOk" type="button" class="col-xs-5 btn btn-primary pull-right">Ok</button>
+                    </div>
                 </div>
             </div>
         </div>

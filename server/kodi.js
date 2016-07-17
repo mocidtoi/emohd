@@ -76,7 +76,7 @@ kodiPlaylistGetItems = function(plid, callback) {
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
     console.log(url);
     http.get(url, function(err, res){
-        if(res) {
+        if(res && res.body) {
             var json = JSON.parse(res.body);
             if(json.result.items) {
                 json.result.items.forEach(callback);

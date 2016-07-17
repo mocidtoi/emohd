@@ -44,6 +44,7 @@ Template.ModalConfig.events({
         Meteor.apply('configKodi', [params], {wait: false});
     },
     'click button#NetatmoOk': function(event, instance) {
+        Session.set('has-widget', true);
         var params = new Object();
         params.netatmoURL = instance.$('#NetatmoURL').val();
         params.netatmoUser = instance.$('#NetatmoUser').val();
@@ -57,48 +58,6 @@ Template.ModalSettings.helpers({
     modalId: function() { return 'modal-settings';}
 });
 
-function reconfigServer(serverIP, serverPort) {
-    window.localStorage.setItem("__root_url", "http://" + serverIP + ":" + serverPort + "/");
-    Meteor.setTimeout(function() {
-        window.location.reload();
-    }, 1000);
-}
-/*function reconfigServer(serverIP, serverPort) {
-    console.log('Reconfig Server:' + serverIP + " - " + serverPort);
-    Meteor.connection = DDP.connect('http://' + serverIP + ":" + serverPort);
-    _.each(['subscribe', 'methods', 'call', 'apply', 'status','reconnect','disconnect'], function (name) {
-        Meteor[name] = _.bind(Meteor.connection[name], Meteor.connection);
-    });
-
-    Meteor.disconnect();
-    Meteor.reconnect();
-    
-    delete Notifier;
-    Notifier = new EventDDP("emohd");
-    configNotifier();
-
-    delete Device;
-    Device = new Mongo.Collection('device');
-    delete Group;
-    Group = new Mongo.Collection('group');
-    delete SceneDev; 
-    SceneDev = new Mongo.Collection('scenedev');
-    delete Task;
-    Task = new Mongo.Collection('task');
-    delete Favorite;
-    Favorite = new Mongo.Collection('favorite');
-    delete Scene;
-    Scene = new Mongo.Collection('scene');
-
-    Meteor.subscribe('data');
-
-    delete Song;
-    Song = new Mongo.Collection('song');
-    delete PlayingItem;
-    PlayingItem = new Mongo.Collection('playingItem');
-    delete Progress;
-    Progress = new Mongo.Collection('progress');
-}*/
 
 Template.ModalSettings.events({
     'click button#settingsOk': function(event, instance) {
@@ -120,8 +79,21 @@ Template.ModalSettings.events({
             return;
         }
 
-        reconfigServer(dHomeIP, dHomePort);        
+        reconfigServer("http://" + dHomeIP + ":" + dHomePort + "/", dHomeKey);        
         instance.$('#modal-settings').modal('hide');;
+    },
+    'click button#discover': function(event, instance) {
+        if(Meteor.isCordova) {
+            zeroconf_discover(function(error, res) {
+                if(!error) {
+                    instance.$('#dhomeIP').val(res.ip);
+                    instance.$('#dhomePort').val('7777');
+                }
+            });
+        }
+        else {
+            alert(TAPi18n.__("Not supported for browser"));
+        }
     }
 });
 

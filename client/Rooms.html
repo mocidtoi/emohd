@@ -1,5 +1,5 @@
 <template name="Rooms">
-    <div class="page-content container-fluid margin-top-70">
+    <div class="page-content container-fluid margin-top-{{top_margin}}">
         <div class="row" data-plugin="matchHeight" data-by-row="true">
             <div class="main-container">
                 <!-- Begin group -->
@@ -12,7 +12,7 @@
                     <div class="list-group list-group-dividered list-group-full">
                         <!-- Begin item -->
                         {{#each device id}}{{#if removable}}
-                        <a class="col-xs-12 removeAction" data-room-id="{{roomId}}">DELETE</a>
+                        <a class="col-xs-12 removeAction" data-room-id="{{roomId}}">{{_ "delete"}}</a>
                         {{else}}
                         <div class="list-group-item short-leg {{statusClass type id}}" data-id="{{id}}" data-name={{name}}>
                             <i class="icon fonta dicon-{{icon type}} wb-inbox"></i><span>{{name}}</span>

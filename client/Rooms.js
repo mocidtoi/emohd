@@ -41,6 +41,7 @@ Template.Rooms.onRendered(function() {
 Template.Rooms.onDestroyed(function() {
     handle.stop();
 });
+Template.Rooms.helpers(PageHelpers);
 Template.Rooms.helpers({
 	device: function(gid) {
         var cursor = Device.find({ groupId: gid }).fetch();
@@ -77,7 +78,7 @@ Template.Rooms.events({
     'click .removeAction': function(event) {
         var target = event.currentTarget;
         var id = parseInt(target.getAttribute('data-room-id'));
-        myConfirm("Are you sure?", "Do you really want to remove this room?",function(){
+        myConfirm(TAPi18n.__("Are you sure?"), TAPi18n.__("Do you really want to remove this room?"),function(){
             Meteor.apply('removeGroup', [id], {wait: false});
         });
     },

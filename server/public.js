@@ -1,6 +1,13 @@
 Future = Npm.require('fibers/future');
+
+var fs = Npm.require('fs');
+
+var spawn = Npm.require('child_process').spawn;
+
 var SerialPort;
 //var serialPort;
+
+//Kadira.connect('brbe4m789sWzAZSkP', 'ea570338-55ad-429e-a2c6-7f2a2a60c795');
 
 Notifier = new EventDDP("emohd");
 kodiIP = null, kodiUser = null, kodiPassword=null, netatmoURL=null, netatmoUser=null, netatmoPassword=null;
@@ -42,7 +49,7 @@ var byteDelimiter = function(emitter, buffer) {
 
 if (process.env.MOCKUP == 'yes') {
     SerialPort = Meteor.npmRequire("virtual-serialport");
-    serialPort = new SerialPort("/dev/ttyO1", {
+    serialPort = new SerialPort(process.env.TTY, {
         baudrate: 115200
     });
     serialPort.on("dataToDevice", function(data) {
@@ -78,7 +85,7 @@ if (process.env.MOCKUP == 'yes') {
 }
 else {
     SerialPort = Meteor.npmRequire("serialport");
-    serialPort = new SerialPort.SerialPort("/dev/ttyO1", {
+    serialPort = new SerialPort.SerialPort(process.env.TTY, {
         baudrate: 115200,
         parser: byteDelimiter
     });
@@ -89,7 +96,7 @@ Meteor.onConnection(function(){
 });
 
 serialPort.on("open", function() {
-    console.log("Open /dev/ttyO1");
+    console.log("Open " + process.env.TTY);
 });
 
 //var commandTrig, commandInfo;
@@ -185,7 +192,8 @@ serialPort.on('data', function(data) {
 var Sequelize = Meteor.npmRequire('sequelize-hierarchy')();
 var sequelize = new Sequelize('database', null, null, {
     dialect: 'sqlite',
-    storage: '/tmp/database.sqlite'
+    //storage: '/tmp/database.sqlite'
+    storage: process.env.DB_FILE
 });
 var Group = sequelize.define('group', {
     id: {
@@ -298,7 +306,7 @@ var Task = sequelize.define('task', {
         afterCreate: function(tsk, option) {
             if (taskPool[tsk.id] != null) taskPool[tsk.id].clear()
             if (tsk.active) {
-                var schedule = later.parse.text(tsk.time)
+                var schedule = later.parse.text("at " +  tsk.time)
                 taskPool[tsk.id] = later.setInterval(function() {
                     command({
                         id: tsk.deviceId,
@@ -312,14 +320,14 @@ var Task = sequelize.define('task', {
         afterUpdate: function(tsk, option) {
             if (taskPool[tsk.id] != null) taskPool[tsk.id].clear()
             if (tsk.active) {
-                var schedule = later.parse.text(tsk.time)
+                var schedule = later.parse.text("at " + tsk.time)
                 taskPool[tsk.id] = later.setInterval(function() {
                     command({
                         id: tsk.deviceId,
                         act: tsk.action ? 'on' : 'off'
                     }, function(res) {
                         console.log(res)
-                    })
+                    });
                 }, schedule);
             }
         },
@@ -474,7 +482,6 @@ function setParam(name, value, callback) {
 
 var later = Meteor.npmRequire('later');
 var taskPool = new Array();
-var sched = later.parse.text('every 4 sddd');
 
 
 // var t = later.setInterval(function(){
@@ -505,8 +512,8 @@ Meteor.startup(function() {
     sequelize.sync().then(function() {
         Task.findAll().then(function(tsk) {
             for (var i = 0; i < tsk.length; i++) {
-                if (tsk[i].active) {
-                    var schedule = later.parse.text(tsk[i].time)
+                if (tsk[i] && tsk[i].active) {
+                    var schedule = later.parse.text("at " + tsk[i].time)
                     taskPool[tsk[i].id] = later.setInterval(function() {
                         command({
                             id: tsk[i].deviceId,
@@ -625,7 +632,6 @@ function addDevice(arg, callback) {
             }
         }).then(function(dev) {
             console.log("device:");
-            //console.dir(dev);
             if (dev) {
                 callback({
                     success: false,
@@ -723,16 +729,22 @@ function updateDevice(arg, callback) {
         });
     }
 }
-Meteor.publish('data', function() {
+Meteor.publish('data', function(token) {
     var self = this;
+    console.log('publish: token=' + token);
+    if (token != process.env.TOKEN) {
+        console.log("Wrong token");
+        return;
+    }
 
     function preOrder(tree, self) {
         var children = [];
-        if (tree.children)
+        if (tree.children) {
             for (var i = 0; i < tree.children.length; i++) {
                 preOrder(tree.children[i], self);
                 children.push(tree.children[i].id);
             }
+        }
         var value = tree.toJSON();
         value.children = children;
         self.added('group', value.id, value);
@@ -740,11 +752,12 @@ Meteor.publish('data', function() {
 
     function findTree(tree, id) {
         if (tree.id == id) return tree;
-        if (tree.children)
+        if (tree.children) {
             for (var i = 0; i < tree.children.length; i++) {
                 var temp = findTree(tree.children[i], id);
                 if (temp.id == id) return temp;
             }
+        }
     }
     Group.findAll({
         hierarchy: true
@@ -1040,7 +1053,8 @@ function doScene(sceneId) {
         Device.findAll({
             where: { 
                 type: {
-                    $in: [0,1,2,3]
+                    //$in: [0,1,2,3]
+                    $in: [0]
                 }
             }
         }).then(function(devices) {
@@ -1056,8 +1070,6 @@ function doScene(sceneId) {
         }).catch(function(err){
             console.log("Error: " + err.toString());
         });
-        
-        return {success:true};
     }
     else {
         SceneDev.findAll({
@@ -1077,9 +1089,8 @@ function doScene(sceneId) {
         }).catch(function(err){
             console.log("Error: " + err.toString());
         });
-        return {success:true};
     }
-    }
+}
 function emitSceneAction(sceneId) {
     var now = new Date();
     var sceneActionMessage = {
@@ -1087,7 +1098,8 @@ function emitSceneAction(sceneId) {
         time: (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()),
     };
     if(sceneId == -1) {
-        sceneActionMessage.content = "Turn all OFF";
+        sceneActionMessage.name = "TURN OFF ALL";
+        sceneActionMessage.action = "activated";
         console.log("Emit: " + JSON.stringify(sceneActionMessage));
         Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
     }
@@ -1097,7 +1109,8 @@ function emitSceneAction(sceneId) {
                 id:sceneId
             }
         }).then(function(scene) {
-            sceneActionMessage.content = "Scene '" + scene.name + "' activated";
+            sceneActionMessage.name = scene.name;
+            sceneActionMessage.action = "activated";
             console.log("Emit: " + JSON.stringify(sceneActionMessage));
             Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
         }).catch(function(){});
@@ -1174,12 +1187,9 @@ function curtainDown(curtainId) {
 }
 Meteor.methods({
     com: function(input) {
-        //var future = new Future();
         command(input, function(res) {
             console.log(res);
-        //    future.return(res);
         });
-        //return future.wait();
     },
     com2: function(input) {
         Device.findOne({
@@ -1209,13 +1219,9 @@ Meteor.methods({
         return true;
     },
     permit: function(info) {
-        var future = new Future();
         permitjoin(info, function(res) {
             console.log("permit:" + res);
-            future.return(res);
         });
-
-        return future.wait();
     },
     stopPermit: function() {
         var messper = new Buffer(8);
@@ -1226,126 +1232,93 @@ Meteor.methods({
         serialPort.write(messper);
     },
     addDevice: function(arg) {
-        var future = new Future();
-        console.log('addDevice: arg');
-        //console.dir(arg);
+        console.log('addDevice:' + arg);
         addDevice(arg, function(res) {
-            future.return(res);
+            console.log('addDevice result:');
+            console.log(res);
         });
-        return future.wait();
     },
     updateDevice: function(arg) {
-        var future = new Future();
-        updateDevice(arg, function(res) {
-            future.return(res);
-        });
-        return future.wait();
+        updateDevice(arg, function(res) { });
     },
     removeDevice: function(arg) {
-        var future = new Future();
-        removeDevice(arg, function(res) {
-            future.return(res);
+        removeDevice(arg, function(res) { 
+            console.log('removeDevice result:');
+            console.log(res);
         })
-        return future.wait();
     },
     addGroup: function(arg) {
-        var future = new Future();
         addGroup(arg, function(res) {
-            future.return(res);
+            console.log('addGroup result:');
+            console.log(res);
         })
-        return future.wait();
     },
     updateGroup: function(arg) {
-        var future = new Future();
         updateGroup(arg, function(res) {
-            future.return(res);
+            console.log('updateGroup result:');
+            console.log(res);
         })
-        return future.wait();
     },
     removeGroup: function(arg) {
-        var future = new Future();
         removeGroup(arg, function(res) {
-            future.return(res);
+            console.log('removeGroup result:');
+            console.log(res);
         })
-        return future.wait();
     },
     addTask: function(arg) {
-        var future = new Future();
         if (arg) {
             arg.active = true;
             Task.create(arg).then(function(tsk) {
-                future.return({
-                    success: true,
-                    group: tsk.toJSON()
-                });
+                console.log("addTask: " + tsk.toJSON());
             }).catch(function(err) {
-                future.return({
-                    success: false,
-                    message: err.name == 'SequelizeForeignKeyConstraintError' ? 'Không có Device nào phù hợp.' : err.toString()
-                });
+                console.log("addTask: " + err);
             });
         }
         else {
-            future.return({
-                success: false,
-                message: 'Dữ liệu gửi lên không đúng định dạng'
-            });
+            console.log("Invalid input parameters");
+            return {success:false, message:"Invalid data input"};
         }
-        return future.wait();
     },
     updateTask: function(arg) {
-        var future = new Future();
         if (arg) {
             Task.findById(arg.id).then(function(tsk) {
                 if (tsk)
                     tsk.update(arg).then(function(res) {
-                        future.return(res)
+                        console.log('updateTask: ' + res.toJSON());
                     });
             });
         }
         else {
-            future.return({
-                success: false,
-                message: 'Dữ liệu gửi lên không đúng định dạng'
-            });
+            console.log("Invalid input parameters");
+            return {success:false, message:"Invalid data input"};
         }
-        return future.wait();
     },
     removeTask: function(arg) {
-        var future = new Future();
         if (arg) {
             Task.findById(arg).then(function(tsk) {
-                if (tsk)
-                    tsk.destroy();
+                if (tsk) tsk.destroy();
             });
         }
         else {
-            future.return({
-                success: false,
-                message: 'Dữ liệu gửi lên không đúng định dạng'
-            });
+            console.log("Invalid input parameters " + arg);
+            return {success:false, message:"Invalid data input"};
         }
-        return future.wait();
     },
     addScene: function(arg) {
-        var future = new Future();
         if(arg) {
             arg.active = true;
             Scene.create(arg).then(function(scene) {
-                future.return({
-                    success: true
-                });
+                console.log("addScene: success");
             }).catch(function(err) {
-                future.return({
-                    success: false,
-                    message: err.toString()
-                });
+                console.log("addScene: error " + err);
             });
         }
-        return future.wait();
+        else {
+            console.log('failure ' + arg);
+            return {success:false, message:"Invalid data input"};
+        }
     },
     removeScene: function(arg) {
-        var future = new Future();
         if(arg) {
             Scene.destroy({
                 where: {
@@ -1353,15 +1326,15 @@ Meteor.methods({
                 },
                 individualHooks: true
             }).then(function(){
-                future.return({success: true});
+                console.log('removeScene: success');
             }).catch(function(err){
-                future.return({
-                    success: false,
-                    message: err.toString()
-                });
+                console.log('removeScene: error ' + err);
             });
         }
-        return future.wait();
+        else {
+            console.log('failure ' + arg);
+            return {success:false, message:"Invalid data input"};
+        }
     },
     sceneAction: function(arg) {
         if(!isNaN(arg)) {
@@ -1369,71 +1342,56 @@ Meteor.methods({
         }
         else {
             console.log('failure ' + arg);
-            return {success:false, message: "Invalid argument (" + arg + ")"};
+            return {success:false, message:"Invalid data input"};
         }
     },
     addSceneDev: function(arg) {
-        var future = new Future();
-        console.log("---- " + arg);
         if(!isNaN(arg)) {
-            console.log("---- Create ----");
             SceneDev.create({
                 sceneId: parseInt(arg),
-//                devId: parseInt(Math.random() * 1000),
                 action: true
             }).then(function() {
                 console.log('Success');
-                future.return({
-                    success: true
-                }); 
             }).catch(function(err){
                 console.log(err.toString());
-                future.return({
-                    success: false,
-                    message: err.toString()
-                });
             });
         }
-        return future.wait();
+        else {
+            console.log('failure ' + arg);
+            return {success:false, message:"Invalid data input"};
+        }
     },
     updateSceneDev: function(arg) {
-        var future = new Future();
-        console.log("-- updateSceneDev " + arg);
-        console.dir(arg);
         if(arg) {
             SceneDev.update(arg, {
                 where:{
                     id: parseInt(arg.id)
                 }
             }).then(function() {
-                future.return({success:true});
+                console.log('updateSceneDev:Success');
             }).catch(function(err) {
-                future.return({success:false, message: err.toString()});
+                console.log(err.toString());
             });
         }
         else {
-            future.return({success:false, message:"Invalid data"});
+            console.log('failure ' + arg);
+            return {success:false, message:"Invalid data input"};
         }
-        return future.wait();
     },
     removeSceneDev: function(arg) {
-        var future = new Future();
         if(arg) {
             SceneDev.destroy({
                 where: {id: parseInt(arg)},
                 individualHooks: true
             }).then(function(){
                 console.log("Done then");
-                future.return({success:true});
             }).catch(function(err){
                 console.log("Done error")
-                future.return({success:false, message: err.toString()});
             });
         }
         else {
-            future.return({success:false, message:"Invalid data input"});
+            return {success:false, message:"Invalid data input"};
         }
-        return future.wait();
     },
     configKodi: function(arg) {
         if(arg) {
@@ -1472,5 +1430,37 @@ Meteor.methods({
     curtainStop: function(arg) {
         curtainUp(arg);
         curtainDown(arg);
+    },
+    syncClock: function(timestamp) {
+        var offset = Math.abs(Date.now() - timestamp);
+        console.log("offset:" + offset);
+        function pad(n) {
+            return (n < 10) ? ("0" + n) : n;
+        }
+        if(offset > 3*1000) {
+            var currentTime = new Date(timestamp);
+            var timeStr = currentTime.getFullYear() + "-" + pad(currentTime.getMonth() + 1)
+                        + "-" + currentTime.getDate() + " " + currentTime.getHours()
+                        + ":" + pad(currentTime.getMinutes()) + ":" + pad(currentTime.getSeconds());
+            console.log(timeStr);
+            var timeSyncProcess = spawn(process.env.TIME_SYNC, [timeStr]);
+            timeSyncProcess.on('error', function(err){
+                console.log('timeSync:Error:' + err);
+            });
+            timeSyncProcess.stdout.on('data', function(data) {
+                console.log('timeSync:output:' + data);
+            });
+        }
+        else {
+            console.log("No need to sync time");
+        }
+    },
+    getDHomeClock: function() {
+        var now = Date.now();
+        var currentTime = new Date(now);
+        console.log(now + " =? " + currentTime);
+        var timeStr = currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds();
+        console.log(timeStr);
+        return {timestamp:now, time:timeStr};
     }
 });

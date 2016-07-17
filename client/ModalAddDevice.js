@@ -1,22 +1,48 @@
-Template.ModalAddDevice.quadGang = [
-        {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAdd"},
-        {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAdd"},
-        {index: 2, region:"switch-3", active:"", in:"", pos:"col-xs-6 pos-lb", template:"FragmentAdd"},
-        {index: 3, region:"switch-4", active:"", in:"", pos:"col-xs-6 pos-rb", template:"FragmentAddScene"}
+Template.ModalAddDevice.dualLightDualScene = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAdd"},
+    {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAdd"},
+    {index: 2, region:"switch-3", active:"", in:"", pos:"col-xs-6 pos-lb", template:"FragmentAddScene"},
+    {index: 3, region:"switch-4", active:"", in:"", pos:"col-xs-6 pos-rb", template:"FragmentAddScene"}
+];
+Template.ModalAddDevice.tripleLightSingleScene = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAdd"},
+    {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAdd"},
+    {index: 2, region:"switch-3", active:"", in:"", pos:"col-xs-6 pos-lb", template:"FragmentAdd"},
+    {index: 3, region:"switch-4", active:"", in:"", pos:"col-xs-6 pos-rb", template:"FragmentAddScene"}
 ];
 
-Template.ModalAddDevice.dualGang = [
-        {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAdd"},
-        {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAddScene"}
+Template.ModalAddDevice.quadScene = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAddScene"},
+    {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAddScene"},
+    {index: 2, region:"switch-3", active:"", in:"", pos:"col-xs-6 pos-lb", template:"FragmentAddScene"},
+    {index: 3, region:"switch-4", active:"", in:"", pos:"col-xs-6 pos-rb", template:"FragmentAddScene"}
 ];
-Template.ModalAddDevice.Curtain = [
-        {index: 0, region:"curtain", active:"active", in:"in", pos:"pos-lt"},
+
+Template.ModalAddDevice.dualLight = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAdd"},
+    {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAdd"}
+];
+
+Template.ModalAddDevice.dualScene = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAddScene"},
+    {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAddScene"}
+];
+
+Template.ModalAddDevice.singleLight = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAdd"}
+];
+
+Template.ModalAddDevice.singleScene = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAddScene"}
+];
+Template.ModalAddDevice.curtain2 = [
+    {index: 0, region:"curtain", active:"active", in:"in", pos:"pos-lt"}
 ];
 
 Template.ModalAddDevice.CurtainSwitch = [
-        {index: 0, region:"curtain", active:"active", in:"in", pos:"pos-lt"},
-        {index: 2, region:"switch-3", active:"", in:"", pos:"col-xs-6 pos-lb"},
-        {index: 3, region:"switch-4", active:"", in:"", pos:"col-xs-6 pos-rb"}
+    {index: 0, region:"curtain", active:"active", in:"in", pos:"pos-lt"},
+    {index: 2, region:"switch-3", active:"", in:"", pos:"col-xs-6 pos-lb"},
+    {index: 3, region:"switch-4", active:"", in:"", pos:"col-xs-6 pos-rb"}
 ];
 
 Template.ModalAddDevice.renderDoneCallback = null;
@@ -37,8 +63,7 @@ Template.ModalAddDevice.modalBodyEvents = {
         var i = elem.getAttribute('data-index');
         i = parseInt(i);
         console.dir(instance.data.founds[i]);
-        if(instance.data && instance.data.founds[i] && (!(instance.data.added[i])))
-        {
+        if(instance.data && instance.data.founds[i] && (!(instance.data.added[i]))) {
             instance.data.added[i] = true;
             instance.$('.nav-pills a[href="#gang' + i + '"]').append("<i style='margin-left: 0.5em;' class='rounded xsmall glyphicon glyphicon-ok bg-success'></i>");
         }
@@ -78,6 +103,8 @@ function addCurtain(buttonIdx, idx, instance) {
     }
 }
 function addSceneButton(buttonIdx, idx, sceneId, sceneName, instance) {
+    console.log("____ sceneId:" + sceneId);
+    console.log("____ sceneName:" + sceneName);
     var gangname = sceneName;
     if( gangname && gangname !== "" ) {
         Meteor.apply("addDevice", [{
@@ -151,8 +178,6 @@ Template.ModalAddDevice.events({
                     name3: instance.$("#gang3 .gangname").val(),
                     groupId: Session.get("room-id")
                 }], {wait: false}, function(error, result) {
-                console.log(error);
-                console.log(result);
             });
         }
         else {
@@ -164,11 +189,13 @@ Template.ModalAddDevice.events({
     },
     "click button.addBtn": function(event, instance) {
         var buttonIdx = event.currentTarget.getAttribute('data-btnIdx');
+        console.log('buttonIdx:' + buttonIdx);
         var idx = event.currentTarget.getAttribute('data-idx');
-        var devType = instance.$('#icon-' + idx).attr('data-value');
+        console.log('idx:' + idx);
+        var devType = parseInt(instance.$('#icon-' + idx).attr("data-value"));
+        console.log(instance.$('#icon-' + idx).attr("data-value"));
         buttonIdx = parseInt(buttonIdx);
         idx = parseInt(idx);
-        devType = parseInt(devType);
         console.log("Add device: buttonIdx=" + buttonIdx + " idx=" + idx + " devType=" + devType);
         switch(devType) {
         case Constants.DEVTYPE_CURTAIN: // curtain
@@ -177,9 +204,14 @@ Template.ModalAddDevice.events({
             break;
         case Constants.DEVTYPE_SCENE: // scene button
             var sceneId = parseInt(Session.get('scene-id'));
-            var sceneName = instance.$("input.mbsc-control.sceneName").val();
+            var sceneName = instance.$("input.mbsc-control.sceneName").eq(idx).val();
             console.log("add scene button");
-            addSceneButton(buttonIdx, idx, sceneId, sceneName, instance);
+            if(sceneName.charCodeAt(0) == "[".charCodeAt(0)) {
+                instance.$('input.mbsc-control.sceneName').eq(idx).parent().addClass('has-error');
+            }
+            else {
+                addSceneButton(buttonIdx, idx, sceneId, sceneName, instance);
+            }
             break;
         default:
             console.log("Add button: " + buttonIdx + " " + idx);
@@ -205,7 +237,10 @@ Template.ModalAddDevice.events({
 Template.ModalAddDevice.onRendered(function() {
 });
 Template.ModalAddDevice.helpers({
-    modules: Template.ModalAddDevice.modules,
+    modules: function() {
+        console.log(Template.ModalAddDevice.modules);
+        return Template.ModalAddDevice.modules;
+    },
     showConfig: function() {
         return ( Session.get("netaddr") == null) ? "":"hide";
     },
@@ -232,6 +267,7 @@ Template.BodyStage1.onRendered(function() {
                     $(window).off('focusin');
                 },
                 onSelect: function(valueText, inst) {
+                    console.log('gangtype:' + inst.getVal());
                     Session.set('gang-type', inst.getVal());
                 }
             });
@@ -242,9 +278,9 @@ Template.BodyStage1.onRendered(function() {
     }, 300);
 });
 
-// FragmentAdd Template
+/*-------------- Template FragmentAdd --------------*/
 Template.FragmentAdd.helpers({
-    devTypes: IconList.slice(0, Constants.DEVTYPE_CURTAIN),
+    devTypes: IconList.slice(0, Constants.DEVTYPE_SCENE),
     found: function() {
         return this.found;
     },
@@ -282,6 +318,7 @@ Template.FragmentAdd.events({
 });
 
 Template.FragmentAdd.onRendered(function() {
+/*
     var self = this;
     if(self.data || !self.data.found){
         Meteor.setTimeout(function() {
@@ -309,60 +346,70 @@ Template.FragmentAdd.onRendered(function() {
             }
         }, 300);
     }
+*/
 });
 // FragmentAdd end
 
-Template.Body4Gang.onRendered(function(){
+/*------------ Template Body4Gang ---------------*/
+Template.Body4Gang.onRendered(function() {
     var foundGangs = this.data.foundGangs;
-    for(var i = 0; i< Template.ModalAddDevice.quadGang.length; i++) {
-        Router.current().render(Template.ModalAddDevice.quadGang[i].template, {
-            to:Template.ModalAddDevice.quadGang[i].region,
+    console.log(Template.ModalAddDevice.modules);
+    for(var i = 0; i< Template.ModalAddDevice.modules.length; i++) {
+        console.log("Module");
+        console.log(Template.ModalAddDevice.modules[i].template);
+        console.log(Template.ModalAddDevice.modules[i].region);
+        Router.current().render(Template.ModalAddDevice.modules[i].template, {
+            to:Template.ModalAddDevice.modules[i].region,
             data:{btnIdx: i, index:i, found: foundGangs[i]}
         });
     }
 });
 Template.Body4Gang.helpers({
-    modules: Template.ModalAddDevice.quadGang
+    modules: function() {
+        return Template.ModalAddDevice.modules;
+    }
 });
 Template.Body4Gang.events({});
 
+/*------------ Template Body2Gang ---------------*/
 Template.Body2Gang.onRendered(function(){
     var foundGangs = this.data.foundGangs;
-    for(var i = 0; i< Template.ModalAddDevice.dualGang.length; i++) {
-        Router.current().render(Template.ModalAddDevice.dualGang[i].template, {
-            to:Template.ModalAddDevice.dualGang[i].region, 
+    for(var i = 0; i< Template.ModalAddDevice.modules.length; i++) {
+        Router.current().render(Template.ModalAddDevice.modules[i].template, {
+            to:Template.ModalAddDevice.modules[i].region, 
             data:{btnIdx:i, index:i, found: foundGangs[i]}
         });
     }
 });
+
 Template.Body2Gang.helpers({
-    modules: Template.ModalAddDevice.dualGang
+    modules: function(){
+        return Template.ModalAddDevice.modules;
+    }
 });
 Template.Body2Gang.events({});
 
-Template.Header4Gang.onRendered(function() {
-    Template.ModalAddDevice.modules = Template.ModalAddDevice.quadGang;
-    this.$('.nav-pills a[href="#gang0"][data-toggle="pill"]').tab('show');
+/*------------ Template Body1Gang ---------------*/
+Template.Body1Gang.onRendered(function(){
+    var foundGangs = this.data.foundGangs;
+    for(var i = 0; i< Template.ModalAddDevice.modules.length; i++) {
+        Router.current().render(Template.ModalAddDevice.modules[i].template, {
+            to:Template.ModalAddDevice.modules[i].region, 
+            data:{btnIdx:i, index:i, found: foundGangs[i]}
+        });
+    }
+});
+Template.Body1Gang.helpers({
+    modules: function() {
+        return Template.ModalAddDevice.modules;
+    }
 });
 
-Template.Header4Gang.events(Template.ModalAddDevice.modalBodyEvents);
-
-Template.Header4Gang.helpers({
-    modules: Template.ModalAddDevice.quadGang
-});
-Template.Header2Gang.onRendered(function() {
-    console.dir(Template.ModalAddDevice.modules);
-    this.$('.nav-pills a[href="#gang0"][data-toggle="pill"]').tab('show');
-});
-Template.Header2Gang.helpers({
-    modules: Template.ModalAddDevice.dualGang
-});
-Template.Header2Gang.events(Template.ModalAddDevice.modalBodyEvents);
-
+/*------------ Template BodyCurtain ------------------*/
 Template.BodyCurtain.onRendered(function() {
     var foundGangs = this.data.foundGangs;
     Router.current().render("FragmentAddCurtain", {
-        to:Template.ModalAddDevice.Curtain[0].region,
+        to:Template.ModalAddDevice.curtain2[0].region,
         data:{btnIdx:0, index:0, found: foundGangs[0]}
     });
 });
@@ -372,6 +419,46 @@ Template.BodyCurtain.helpers({
         return ((this.foundGangs[0] == undefined) && (this.foundGangs[1] == undefined));
     }
 });
+
+/*------------ Template Header4Gang ------------------*/
+Template.Header4Gang.onRendered(function() {
+    console.log("Header4Gang rendered");
+    this.$('.nav-pills a[href="#gang0"][data-toggle="pill"]').tab('show');
+});
+
+Template.Header4Gang.events(Template.ModalAddDevice.modalBodyEvents);
+
+Template.Header4Gang.helpers({
+    modules: function() {
+        console.log(Template.ModalAddDevice.modules);
+        return Template.ModalAddDevice.modules;
+    }
+});
+
+/*------------ Template Header2Gang ------------------*/
+Template.Header2Gang.onRendered(function() {
+    this.$('.nav-pills a[href="#gang0"][data-toggle="pill"]').tab('show');
+});
+Template.Header2Gang.helpers({
+    modules: function() {
+        console.log(Template.ModalAddDevice.modules);
+        return Template.ModalAddDevice.modules;
+    }
+});
+Template.Header2Gang.events(Template.ModalAddDevice.modalBodyEvents);
+
+/*------------ Template Header1Gang ------------------*/
+Template.Header1Gang.onRendered(function() {
+    this.$('.nav-pills a[href="#gang0"][data-toggle="pill"]').tab('show');
+});
+Template.Header1Gang.helpers({
+    modules: function() {
+        console.log(Template.ModalAddDevice.modules);
+        return Template.ModalAddDevice.modules;
+    }
+});
+Template.Header1Gang.events(Template.ModalAddDevice.modalBodyEvents);
+
 Template.FragmentAddCurtain.helpers({
     roomName: function() {
         var rId = Session.get("room-id");

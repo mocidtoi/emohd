@@ -1,0 +1,4 @@
+{
+    "dbFile":"/tmp/database.sqlite",
+    "tty":"/dev/ttyS4"
+}

@@ -1,5 +1,5 @@
 <template name="More">
-    <div class="page-content container-fluid margin-top-70" style="padding-top:17px;padding-right:25px;">
+    <div class="page-content container-fluid margin-top-{{top_margin}}" style="padding-top:17px;padding-right:25px;">
         <div class="row">
             <div class="more-list">
                 <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
@@ -7,7 +7,7 @@
                         <div class="icondemo bg-glass border-glass rippler rippler-default">
                             <i class="icon dicon-settings-1" aria-hidden="true"></i>
                         </div>
-                        <span>Settings</span>
+                        <span>{{_ "Settings"}}</span>
                     </a>
                 </div>
                 <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
@@ -15,7 +15,7 @@
                         <div class="icondemo bg-glass border-glass rippler rippler-default">
                             <i class="icon dicon-sound" aria-hidden="true"></i>
                         </div>
-                        <span>Musics</span>
+                        <span>{{_ "Musics"}}</span>
                     </a>
                 </div>
                 <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
@@ -23,15 +23,23 @@
                         <div class="icondemo bg-glass border-glass rippler rippler-default">
                             <i class="icon dicon-netatmo" aria-hidden="true"></i>
                         </div>
-                        <span>Air quality</span>
+                        <span>{{_ "Air quality"}}</span>
                     </a>
                 </div>
                 <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
-                    <a class="icon_list text-center ">
+                    <a id="clock-syn" class="icon_list text-center ">
                         <div class="icondemo bg-glass border-glass rippler rippler-default">
                             <i class="icon dicon-clk-syn" aria-hidden="true"></i>
                         </div>
                         <span>Clock-syn.</span>
+                    </a>
+                </div>
+                <div class="col-lg-1 col-md-2 col-sm-3 col-xs-4">
+                    <a class="icon_list text-center" id="language">
+                        <div class="icondemo bg-glass border-glass rippler rippler-default">
+                            <span style="margin-top:24px;vertical-align:center">{{language}}</span>
+                        </div>
+                        <span>{{_ "Languages"}}</span>
                     </a>
                 </div>
             </div>

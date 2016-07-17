@@ -1,6 +1,7 @@
 Template.Notifications.onRendered(function(){
     Session.set('notification-count', 0);
 });
+Template.Notifications.helpers(PageHelpers);
 Template.Notifications.helpers({
     notification: function(){
         return Meteor.Notification.items_reverse();

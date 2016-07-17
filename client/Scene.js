@@ -144,10 +144,12 @@ Template.Scene.helpers({
 Template.Scene.events({
     'click button': function(event, instance) {
         var id = parseInt(Router.current().params.scid);
-        myConfirm("Are you sure?", "Do you really want to remove this scene?", function() {
-            Meteor.apply('removeScene', [id], {wait:false});
-            Router.go(getBackLink());
-        });
+        myConfirm(TAPi18n.__("Are you sure?"), 
+            TAPi18n.__("Do you really want to remove this button?"), function() {
+                Meteor.apply('removeScene', [id], {wait:false});
+                Router.go(getBackLink());
+            }
+        );
     },
     'click a.addBtn': function(event, instance) {
         console.log('add scenedev');
@@ -157,9 +159,10 @@ Template.Scene.events({
     },
     'click a[data-action="remove-scenedev"]': function(event, instance) {
         var scid = parseInt(event.currentTarget.getAttribute('data-id'));
-        myConfirm("Are you sure?", 
-                  "Do you really want to remove this device from this scene?", function() {
-            Meteor.apply('removeSceneDev', [scid], {wait:false});
-        });
+        myConfirm(TAPi18n.__("Are you sure?"), 
+            TAPi18n.__("Do you really want to remove this device from this scene?"), function() {
+                Meteor.apply('removeSceneDev', [scid], {wait:false});
+            }
+        );
     }
 });

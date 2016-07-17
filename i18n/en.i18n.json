@@ -1,0 +1,24 @@
+{
+    // comment
+    //"Are you sure?":
+    //"Do you really want to remove this task?":
+    //"Rooms":
+    //"Favorites":
+    //"Scenes":
+    //"Notifications": "Thông báo",
+    //"More ...": "Khác ...",
+    //"Musics":
+    //"Add": "Thêm",
+    "basicInfo":"Basic Information",
+    "description":"Description ...",
+    "schedule":"Schedule",
+    "turnon":"turn ON",
+    "turnoff":"turn OFF",
+    "delete": "DELETE",
+    "save": "Save",
+    "back": "Back",
+    "scanConfig":"Scan Config",
+    "or": "or ",
+    "settingServer":"Setting server manually",
+    "_":""
+}

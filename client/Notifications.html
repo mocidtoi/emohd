@@ -1,11 +1,11 @@
 <template name="Notifications">
-    <div class="page-content container-fluid margin-top-70" style="padding-top:25px; padding-right:25px">
+    <div class="page-content container-fluid margin-top-{{top_margin}}" style="padding-top:25px; padding-right:25px">
         <div class="row" data-plugin="matchHeight" data-by-row="true">
             <div class="main-container">
                 <div class="notification-list">
                 {{#each notification}}
                     <div class="notification-item {{newClass this}}">
-                        <div class="col-xs-9"><i class="dicon-{{icon type}}" style="margin-right:1em"></i>{{content}}</div>
+                        <div class="col-xs-9"><i class="dicon-{{icon type}}" style="margin-right:1em"></i>{{_ "Scene"}} "{{_ name}}" {{_ action}}</div>
                         <div class="col-xs-3 text-right">{{time}}</div>
                     </div>
                 {{/each}}

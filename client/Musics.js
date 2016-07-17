@@ -14,6 +14,7 @@ Template.Musics.events({
     }
 });
 
+Template.Musics.helpers(PageHelpers);
 Template.Musics.helpers({
     songCount: function() {
         return Song.find().count();

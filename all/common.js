@@ -1,18 +1,20 @@
 import { Meteor } from 'meteor/meteor';
 
 Constants = {
-    DEVTYPE_CURTAIN:4,
-    DEVTYPE_SCENE:5,
+    DEVTYPE_CURTAIN:2,
+    DEVTYPE_SCENE:1,
     SHUFFLE: 1,
     PREVIOUS: 2,
     PLAYPAUSE: 3,
     NEXT: 4
 };
 
+TOKEN=null;
 Router.configure({
     layoutTemplate: 'ApplicationLayout',
     waitOn: function() {
-        var res = Meteor.subscribe('data');
+        console.log('Subscribe data: token=' + TOKEN);
+        var res = Meteor.subscribe('data', TOKEN);
         return [ res ];
     },
     loadingTemplate: 'LoadingScreen1'
@@ -20,14 +22,12 @@ Router.configure({
 var homeRouteOpt = {
     action: function() {
         this.render('Favorites');
-        this.render('NetAtmo', {to: "widget"});
         setActiveTab(1);
     }
 };
 Router.route('/Rooms', {
     action: function() {
         this.render('Rooms');
-        this.render('NetAtmo', {to: "widget"});
         setupModalAddRoom(this);
         this.render('ModalAddDevice', {to: "modal-adddev"});
         this.render('ModalCurtainControl', {to: "modal-curtain"});
@@ -40,7 +40,6 @@ Router.route('/Scenes', {
     action: function() {
         setActiveTab(3);
         this.render('Scenes');
-        this.render('NetAtmo', {to: 'widget'});
         setupModalAddScene(this);
     }
 });
@@ -48,25 +47,22 @@ Router.route('/Notifications', {
     action: function() {
         Session.set("title", "Notifications");
         setActiveTab(4);
-        this.render('NetAtmo', {to: "widget"});
         this.render('Notifications');
     }
 });
 Router.route('/More', {
     action: function() {
         setActiveTab(5);
-        Session.set("title", "More ...");
+        Session.set("title", TAPi18n.__("More") + " ...");
         this.render('More');
-        this.render('NetAtmo', {to: "widget"});
         this.render('ModalConfig', {to: "modal-config"});
     }
 });
 
 Router.route('/Device/:gid/:id', {
     action: function() {
-        Session.set("title", null);
+        Session.set("title", "_");
         this.render('Device');
-        this.render('NetAtmo', {to: "widget"});
         this.render('CancelBtn', {to: "leftNav"});
 
         setBackLink("/Rooms");
@@ -77,9 +73,8 @@ Router.route('/Device/:gid/:id', {
 
 Router.route('/Scene/:scid', {
     action: function() {
-        Session.set("title", null);
+        Session.set("title", "_");
         this.render("Scene");
-        this.render('NetAtmo', {to: 'widget'});
         this.render('CancelBtn', {to: 'leftNav'});
         setBackLink('/Scenes');
         this.render('SaveBtn', {to: "rightNav"});
@@ -88,7 +83,8 @@ Router.route('/Scene/:scid', {
 });
 Router.route('/Musics', {
     waitOn: function() {
-        var res = Meteor.subscribe('music');
+        console.log('Subscribe music: token=' + TOKEN);
+        var res = Meteor.subscribe('music', TOKEN);
         return [
             res
         ];
@@ -96,14 +92,67 @@ Router.route('/Musics', {
     action: function() {
         Session.set('title', "Musics");
         this.render("Musics");
-        this.render('NetAtmo', {to: 'widget'});
         this.render("Player", {to: 'player'});
         this.render('SettingsBtn', {to: "rightNav"});
         this.render('ModalConfig', {to: "modal-config"});
         setActiveTab(-1);
     }
 });
+function isIPv4(str) {
+    var blocks = str.split('.');
+    if( blocks.length != 4 ) return false;
+    for( var i = 0; i < 4; i++ ) {
+        var bNum = parseInt(blocks[i]);
+        if(bNum < 0 || bNum > 256 ) return false;
+    }
+    return true;
+}
+zeroconf_discover = function(callback) {
+    var zeroconf = cordova.plugins.zeroconf;
+
+    var timeoutHandle = Meteor.setTimeout(function() {
+        zeroconf_unwatch('_workstation._tcp.local.');
+    }, 10*1000);
+
+    zeroconf.watch('_workstation._tcp.local.', function(result) {
+        var action = result.action;
+        var service = result.service;
+
+        if (action == 'added') {
+            if( service.name.indexOf("dhome") > -1 ) {
+                for( var i = 0; i < service.addresses.length; i++) {
+                    // check for service name
+                    if( isIPv4(service.addresses[i]) ) {
+                        var res = new Object();
+                        res.ip = service.addresses[i];
+                        res.port = 7777;
+                        Meteor.clearTimeout(timeoutHandle);
+                        zeroconf.unwatch('_workstation._tcp.local.');
+                        callback(null, res);
+                        return;
+                    }
+                }
+            }
+            callback("No valid address found", null);
+        }
+    });
+}
+
+reconfigServer = function(rootURL, serverKey) {
+    if( Meteor.isClient ) {
+        window.localStorage.setItem("__root_url", rootURL);
+        if(serverKey) {
+            window.localStorage.setItem("__token", serverKey);
+        }
+        //alert("rootURL:" + rootURL + "\n" + serverKey);
+        
+        Meteor.setTimeout(function() {
+            window.location.reload();
+        }, 1000);
+    }
+}
 if (Meteor.isClient) {
+    TOKEN = window.localStorage.getItem("__token");
     Notifier = new EventDDP("emohd");
 
     Device = new Mongo.Collection('device');
@@ -120,11 +169,11 @@ if (Meteor.isClient) {
     Meteor.Notification = new Queue(20);
     IconList = [
         {icon:"light", title:"Light", color:"bg-cyan-800"}, 
+        {icon:"scene", title: "Command", color: "bg-teal-800"},
+        {icon:"curtain", title: "Curtain", color: "bg-indigo-800"},
         {icon:"fan", title:"Fan", color:"bg-blue-800"}, 
         {icon:"aircon", title: "Air conditioner", color: "bg-green-800"},
-        {icon:"tv", title: "Television", color: "bg-pink-800"}, 
-        {icon:"curtain", title: "Curtain", color: "bg-indigo-800"},
-        {icon:"scene", title: "Command", color: "bg-teal-800"}
+        {icon:"tv", title: "Television", color: "bg-pink-800"} 
     ];
     myConfirm = function(title, content, callback) {
         Session.set('confirm-title',title);
@@ -157,12 +206,12 @@ if (Meteor.isClient) {
         router.render('ModalAddRoom', {to: "modal-addroom"});
         Session.set('modal-top', MODALS[0].id);
         router.render('AddBtn', {to: "rightNav"});
-    }
+    };
     setupModalAddScene = function(router) {
         router.render('ModalAddScene', {to: "modal-addroom"});
         Session.set('modal-top', MODALS[1].id);
         router.render('AddBtn', {to: "rightNav"});
-    }
+    };
     Meteor.Spinner.options = {
         lines: 13, // The number of lines to draw
         length: 10, // The length of each line
@@ -180,5 +229,10 @@ if (Meteor.isClient) {
         zIndex: 2e9, // The z-index (defaults to 2000000000)
         top: '45%', // Top position relative to parent in px
         left: '50%' // Left position relative to parent in px        
-    }
+    };
+    PageHelpers = {
+        top_margin: function() {
+            return Session.get('has-widget')?"70":"40";
+        }
+    };
 }

@@ -23,7 +23,7 @@ Template.Device.onRendered(function() {
             Meteor.apply('updateTask', [{
                 id: parseInt(timeObj.attr('data-id')),
                 time: timeObj.val(),
-                action: (actionObjs.eq(i).val() == "turn ON")
+                action: (actionObjs.eq(i).val() == TAPi18n.__("turnon"))
             }], {wait:false});
         }
         var ret = Meteor.apply('updateDevice', [{
@@ -94,13 +94,13 @@ Template.Device.events({
     },
     "click div[data-action='remove-task']": function(event, instance) {
         var task_id = parseInt(event.currentTarget.getAttribute('data-id'));
-        myConfirm( "Are you sure?", "Do you really want to remove this task?", function() {
+        myConfirm( TAPi18n.__("Are you sure?"), TAPi18n.__("Do you really want to remove this task?"), function() {
             Meteor.apply('removeTask', [task_id], {wait: false});
         });
     },
     'click button#removeDevice': function(event) {
         var devId = parseInt(Router.current().params.id);
-        myConfirm( "Are you sure?", "Do you really want to remove this device?", function() {
+        myConfirm( TAPi18n.__("Are you sure?"), TAPi18n.__("Do you really want to remove this device?"), function() {
             Meteor.apply('removeDevice', [devId], {wait:false});
             Router.go('/Rooms');
         });

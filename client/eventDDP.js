@@ -3,7 +3,9 @@ console.log('eventDDP');
 configNotifier = function() {
     console.log("Config Notifier");
     Notifier.addListener('joininfo', function(message) {
+        console.log("joininfo");
         var response = JSON.parse(message);
+        console.log(response);
         Session.set('netaddr', response.netadd);
         Session.set('endpoint', response.endpoint);
         console.log("Notifier event");
@@ -26,6 +28,7 @@ configNotifier = function() {
 
         switch (response.endpoint) {
         case 16:
+        case 17:
             var foundArray = [
                         foundGangs[0] != undefined, 
                         foundGangs[1] != undefined,
@@ -34,29 +37,49 @@ configNotifier = function() {
                     ];
             var gangtype = Session.get('gang-type');
             var gang = [
-                {name:"Header4Gang", modules: Template.ModalAddDevice.quadGang}, 
-                {name:"Header2Gang", modules: Template.ModalAddDevice.dualGang}, 
-                {name:"HeaderCurtain", modules:Template.ModalAddDevice.dualGang}, 
-                {name:"HeaderCurtainSwitch", modules:Template.ModalAddDevice.CurtainSwitch}
+                {name:"Header4Gang", modules: Template.ModalAddDevice.dualLightDualScene}, 
+                {name:"Header4Gang", modules: Template.ModalAddDevice.tripleLightSingleScene}, 
+                {name:"Header4Gang", modules: Template.ModalAddDevice.quadScene}, 
+                {name:"Header2Gang", modules: Template.ModalAddDevice.dualLight}, 
+                {name:"Header2Gang", modules: Template.ModalAddDevice.dualScene}, 
+                {name:"Header1Gang", modules:Template.ModalAddDevice.singleLight}, 
+                {name:"Header1Gang", modules:Template.ModalAddDevice.singleScene}, 
+                {name:"HeaderCurtain", modules:Template.ModalAddDevice.curtain2}
             ];
             gangtype = parseInt(gangtype);
+            console.log(gangtype);
+            console.log(gang);
             Template.ModalAddDevice.modules = gang[gangtype].modules;
             Router.current().render(gang[gangtype].name, {to:"modalHeader", data: {founds:foundArray, added:[false, false, false, false]}});
             Router.current().render("Blank", {to:"modalBody"});
-            if( gangtype == 0 ) {
+            if( gangtype == 0 ) { // 2-light, 2-scene
                 Router.current().render("Body4Gang", {to: "modalBody", data: {foundGangs: foundGangs}});
             }
-            else if( gangtype == 1 ) {
+            else if( gangtype == 1 ) { // 3-light, 1-scene
+                Router.current().render("Body4Gang", {to: "modalBody", data: {foundGangs: foundGangs}});
+            }
+            else if( gangtype == 2 ) { // 4-scene switch
+                Router.current().render("Body4Gang", {to: "modalBody", data: {foundGangs: foundGangs}});
+            }
+            else if( gangtype == 3 ) { // 2-light
                 Router.current().render("Body2Gang", {to: "modalBody", data: {foundGangs: foundGangs}});
             }
-            else if( gangtype == 2 ) {
+            else if( gangtype == 4 ) { // 2-scene
+                Router.current().render("Body2Gang", {to: "modalBody", data: {foundGangs: foundGangs}});
+            }
+            else if( gangtype == 5 ) { // 1-light
+                Router.current().render("Body1Gang", {to: "modalBody", data: {foundGangs: foundGangs}});
+            }
+            else if( gangtype == 6 ) { // 1-scene
+                Router.current().render("Body1Gang", {to: "modalBody", data: {foundGangs: foundGangs}});
+            }
+            else if( gangtype == 7 ) { // gang for curtain
                 Router.current().render("BodyCurtain", {to: "modalBody", data: {foundGangs: foundGangs}});
             }
-            else if( gangtype == 3 ) {
-                Router.current().render("BodyCurtainSwitch", {to: "modalBody", data: {foundGangs: foundGangs}});
-            }
             break;
+            
         case 18:
+            break;
         }
     });
 
