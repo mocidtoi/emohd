@@ -30,6 +30,10 @@ Template.Favorites.onDestroyed(function() {
 });
 Template.Favorites.helpers(PageHelpers);
 Template.Favorites.helpers({
+    tileColorById: function(devId) {
+        var i = devId % ColorList.length;
+        return ColorList[i];
+    },
     tileColor: function(devType) {
         return IconList[devType].color;
     },

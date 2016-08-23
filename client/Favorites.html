@@ -4,7 +4,7 @@
             <div class="grid">
                 {{#each favorites}} {{#with device deviceId}}
                 <div class="grid-item {{disabled status}}" data-big="{{big @index}}">
-                    <div class="{{tileColor type}} grid-view" data-devId="{{id}}">
+                    <div class="{{tileColorById id}} grid-view" data-devId="{{id}}">
                         <div class="icon-wrap">
                             <div class="icondemo vertical-align-middle">
                                 <i class="icon dicon-{{icon type}}"></i>

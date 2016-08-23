@@ -4,6 +4,7 @@
   <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
 </head>
 <body class="dashboard">
+  <script src='/bootstrap.min.js'></script>
   <script src='/packery/js/packery.pkgd.js'></script>
   <script src="/mobiscroll.js"></script>
   <script src="/jquery.rippler.min.js"></script>
@@ -13,13 +14,13 @@
 <template name="ApplicationLayout">
     <div id="scrollable" style="width:103%;height:100%;overflow:scroll;">
         <nav class="site-navbar navbar navbar-inverse navbar-fixed-top navbar-mega nav-down" role="navigation">
-            <div class="navbar-header">
+<!--            <div class="navbar-header"> -->
                 {{>yield "leftNav"}}
                 <div class="navbar-brand navbar-brand-center site-gridmenu-toggle" data-toggle="gridmenu">
                     <a href="#" style="color: #fff;">{{_ title}}</a>
                 </div>
                 {{>yield "rightNav"}}
-            </div>
+<!--            </div> -->
         </nav>
         {{#if has_widget}}
             {{>NetAtmo}}
@@ -47,12 +48,13 @@
     <div class="loading">
         {{>spinner}}
         <div style=" position: absolute; top: 55%; width: 100%; text-align: center;">
-            <span class="loading-msg">{{_ message}}</span>
+            <!-- <span class="loading-msg">{{message}}</span> -->
             {{#if isCordova}}
             <button class="col-xs-12 btn btn-link" id='reconnect' href="#">{{_ "Reconnect"}}</button>
             <button class="col-xs-12 btn btn-link" id='scan' href="#">{{_ "scanConfig"}}</button>
             {{/if}}
             <button class="col-xs-12 btn btn-link" data-toggle="modal" data-target="#modal-settings">{{_ "settingServer"}}</button>
+            <button id='wificonfig' class="col-xs-12 btn btn-link">{{_ "Config WiFi"}}</button>
         </div>
     </div>
 </template>
@@ -60,12 +62,13 @@
     <div class="loading {{connStatus}} {{hide}}">
         {{>spinner}}
         <div style=" position: absolute; top: 55%; width: 100%; text-align: center;">
-            <span class="loading-msg">{{message}}</span>
+            <!-- <span class="loading-msg">{{message}}</span> -->
             {{#if isCordova}}
             <button class="col-xs-12 btn btn-link" id='reconnect' href="#">{{_ "Reconnect"}}</button>
             <button class="col-xs-12 btn btn-link" id='scan' href="#">{{_ "scanConfig"}}</button>
             {{/if}}
             <button class="col-xs-12 btn btn-link" data-toggle="modal" data-target="#modal-settings">{{_ "settingServer"}}</button><p></p>
+            <button id='wificonfig' class="col-xs-12 btn btn-link">{{_ "Config WiFi"}}</button>
         </div>
     </div>
 </template>

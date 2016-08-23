@@ -5,4 +5,5 @@ if(rootUrl){
     if(Meteor && Meteor.absoluteUrl &&  typeof Meteor.absoluteUrl.defaultOptions == "object"){
         Meteor.absoluteUrl.defaultOptions.rootUrl = rootUrl;
     }
+    alert("rootUrl:" + rootUrl);
 }

@@ -204,10 +204,11 @@ Template.ModalAddDevice.events({
             break;
         case Constants.DEVTYPE_SCENE: // scene button
             var sceneId = parseInt(Session.get('scene-id'));
-            var sceneName = instance.$("input.mbsc-control.sceneName").eq(idx).val();
+            var parentElem = event.currentTarget.parentElement;
+            var sceneName = $(parentElem).find('input.mbsc-control.sceneName').val();
             console.log("add scene button");
             if(sceneName.charCodeAt(0) == "[".charCodeAt(0)) {
-                instance.$('input.mbsc-control.sceneName').eq(idx).parent().addClass('has-error');
+                $(parentElem).find('input.mbsc-control.sceneName').parent().addClass('has-error');
             }
             else {
                 addSceneButton(buttonIdx, idx, sceneId, sceneName, instance);

@@ -1,5 +1,7 @@
 Future = Npm.require('fibers/future');
 
+Fiber = Npm.require('fibers');
+
 var fs = Npm.require('fs');
 
 var spawn = Npm.require('child_process').spawn;
@@ -9,14 +11,29 @@ var SerialPort;
 
 //Kadira.connect('brbe4m789sWzAZSkP', 'ea570338-55ad-429e-a2c6-7f2a2a60c795');
 
+var reqPerSec = 2;
+if (process.env.MRATE) {
+    reqPerSec = parseInt(process.env.MRATE);
+    if( reqPerSec < 2 ) reqPerSec = 2;
+}
+var nCheck = 2;
+if (process.env.NCHECK) {
+    nCheck = parseInt(process.env.NCHECK);
+    if( nCheck < 1 ) nCheck = 2;
+}
+var RateLimiter = Npm.require('limiter').RateLimiter;
+var limiter = new RateLimiter(reqPerSec/2, 500); // (reqPerSec/2) message per 500ms at maximum
+
 Notifier = new EventDDP("emohd");
 kodiIP = null, kodiUser = null, kodiPassword=null, netatmoURL=null, netatmoUser=null, netatmoPassword=null;
 
+var useBcast = (process.env.USE_BCAST=="yes");
+
 var byteDelimiter = function(emitter, buffer) {
-    console.log('----------')
-    console.log(buffer)
-    console.log('RAW: ' + buffer);
-    console.log('----------')
+    myLog('----------');
+    myLog(buffer);
+    myLog('RAW: ' + buffer);
+    myLog('----------');
     for (var i = 0; i < buffer.length;) {
         if (buffer[i] == 0x44) {
             var bufseq = new Buffer(8);
@@ -26,10 +43,10 @@ var byteDelimiter = function(emitter, buffer) {
                 if (buffer[i] != 0x44)
                     bufseq[j] = buffer[i];
                 else {
-                    console.log('----------')
-                    console.log('Bad Message: ' + bufseq);
-                    console.log(bufseq)
-                    console.log('----------')
+                    myLog('----------')
+                    myLog('Bad Message: ' + bufseq);
+                    myLog(bufseq)
+                    myLog('----------')
                     break;
                 }
                 if (j == 7 || i >= buffer.length) {
@@ -46,6 +63,30 @@ var byteDelimiter = function(emitter, buffer) {
         }
     }
 };
+function myLog(message) {
+    console.log(message);
+}
+
+function sendPermitJoin(validSec) {
+    var buffer = new Buffer(8);
+    buffer[0] = 0x44;
+    buffer[1] = 0x31;
+    buffer[2] = 0x32;
+    buffer[3] = parseInt(validSec, 10);
+    buffer[7] = 0x34; // 0x30 = '0': COMMAND_OFF, 0x31: COMMAND_ON, 0x32: COMMAND_CHECK, 0x33: COMMAND_TOA, 0x34: COMMAND_PERJOIN
+    serialPort.write(buffer);
+    return buffer;
+}
+
+function sendTurnOffAll() {
+    var buffer = new Buffer(8);
+    buffer[0] = 0x44;
+    buffer[1] = 0x31;
+    buffer[2] = 0x32;
+    buffer[7] = 0x33; // 0x30 = '0': COMMAND_OFF, 0x31: COMMAND_ON, 0x32: COMMAND_CHECK, 0x33: COMMAND_TOA, 0x34: COMMAND_PERJOIN
+    serialPort.write(buffer);
+    return buffer;
+}
 
 if (process.env.MOCKUP == 'yes') {
     SerialPort = Meteor.npmRequire("virtual-serialport");
@@ -53,20 +94,20 @@ if (process.env.MOCKUP == 'yes') {
         baudrate: 115200
     });
     serialPort.on("dataToDevice", function(data) {
-        if (data[0] == 0x44 && data[1] == 0x31) {
-            if (data[2] == 0x34) {
+        if (data[0] == 0x44 && data[1] == 0x31) { // D1
+            if (data[2] == 0x34) { // D14  --> command OUT
                 var res = new Buffer(8);
-                res[0] = 0x44;
-                res[1] = 0x33;
-                res[2] = 0x34;
-                res[3] = data[3];
-                res[4] = data[4];
-                res[5] = data[5];
-                res[6] = data[6];
-                res[7] = data[7];
+                res[0] = 0x44; // D
+                res[1] = 0x33; // D3
+                res[2] = 0x34; // D34 --> status IN
+                res[3] = data[3]; // Button ID
+                res[4] = data[4]; // NetAddr 
+                res[5] = data[5]; // NetAddr
+                res[6] = data[6]; // Endpoint
+                res[7] = data[7]; // 
                 serialPort.writeToComputer(res);
             }
-            if (data[2] == 0x32) {
+            if (data[2] == 0x32) { // D12  --> Bcast OUT
                 var res = new Buffer(8);
                 res[0] = 0x44;
                 res[1] = 0x33;
@@ -92,100 +133,140 @@ else {
 }
 
 Meteor.onConnection(function(){
-    console.log("A client connected");
+    myLog("A client connected");
 });
 
 serialPort.on("open", function() {
-    console.log("Open " + process.env.TTY);
+    myLog("Open " + process.env.TTY);
 });
 
 //var commandTrig, commandInfo;
+var blinkTimerHandle;
+function zbLedOn() {
+    myLog("zbLedOn");
+    fs.writeFileSync(Constants.LED_FILE + "/trigger", "timer");
+    fs.writeFileSync(Constants.LED_FILE + "/delay_on", "50");
+    fs.writeFileSync(Constants.LED_FILE + "/delay_off", "250");
+}
+
+function zbLedOff() {
+    myLog("zbLedOff");
+    fs.writeFileSync(Constants.LED_FILE + "/trigger", "none");
+}
+
+function zbLedBlinkOne() {
+//    Fiber(function(){
+        if(blinkTimerHandle) {
+            clearTimeout(blinkTimerHandle);
+        }
+        else {
+            zbLedOn();
+        }
+        blinkTimerHandle = setTimeout(zbLedOff, 1000);
+//    }).run();
+}
 
 serialPort.on('data', function(data) {
-    if (data[0] == 0x44 && data[1] == 0x33) { //"D": start byte; "3": device -> ZAP)
-        try {
-            if (data[2] == 0x34) { // Command response (E.g.: report on/off)
-                Device.findOne({
-                    where: {
-                        idx: data[3],
-                        netadd: data[4] * 256 + data[5],
-                        endpoint: data[6]
-                    }
-                }).then(function(dev){
-                    if(dev) {
-                        if(dev.sceneId && dev.type == Constants.DEVTYPE_SCENE) {
-                            console.log("Scene button: " + dev.sceneId);
-                            doScene(dev.sceneId);
+    if (data[0] == 0x44) {
+        if(data[1] == 0x33) { //"D": start byte; "3": device -> ZAP)
+            //zbLedBlinkOne();
+            try {
+                if (data[2] == 0x34) { // Command response (E.g.: report on/off)
+                    Device.findOne({
+                        where: {
+                            idx: data[3],
+                            netadd: data[4] * 256 + data[5],
+                            endpoint: data[6]
                         }
-                        else if( dev.type == Constants.DEVTYPE_CURTAIN) {
-                            console.log("Curtain down");
+                    }).then(function(dev){
+                        if(dev) {
+                            if(dev.sceneId && dev.type == Constants.DEVTYPE_SCENE) {
+                                myLog("Scene button: " + dev.sceneId);
+                                doScene(dev.sceneId);
+                            }
+                            else if( dev.type == Constants.DEVTYPE_CURTAIN) {
+                                myLog("Curtain down");
+                            }
+                            else {
+                                dev.status = data[7];
+                                dev.save().then(function(thisDev){
+                                    myLog("change state success");
+                                    Favorite.findOne({
+                                        where:{deviceId:thisDev.id}
+                                    }).then(function(fav) {
+                                        fav.count = fav.count + 1;
+                                        fav.save();
+                                    }).catch(function(e){
+                                        myLog("Error " + e);
+                                        Favorite.create({
+                                            count:1, 
+                                            deviceId:thisDev.id
+                                        }).then(function(fav){
+                                            myLog("Create new fav");
+                                        });
+                                    });
+                                }).catch(function(e){
+                                    myLog("Update device " + e);
+                                });
+                            }
                         }
                         else {
-                            dev.status = data[7];
-                            dev.save().then(function(thisDev){
-                                console.log("change state success");
-                                Favorite.findOne({
-                                    where:{deviceId:thisDev.id}
-                                }).then(function(fav) {
-                                    fav.count = fav.count + 1;
-                                    fav.save();
-                                }).catch(function(e){
-                                    console.log("Error " + e);
-                                    Favorite.create({
-                                        count:1, 
-                                        deviceId:thisDev.id
-                                    }).then(function(fav){
-                                        console.log("Create new fav");
-                                    });
-                                });
-                            }).catch(function(e){
-                                console.log("Update device " + e);
+                            Device.findOne({
+                                where: {
+                                    idx1: data[3],
+                                    netadd: data[4] * 256 + data[5],
+                                    endpoint: data[6]
+                                }
+                            }).then(function(dev){
+                                if( dev && dev.type == Constants.DEVTYPE_CURTAIN) {
+                                    myLog("Curtain up");
+                                }
+                            }).catch(function(err) {
+                                myLog("Error-3 " + err);
+                                myLog(err.stack);
                             });
                         }
-                    }
-                    else {
-                        Device.findOne({
-                            where: {
-                                idx1: data[3],
-                                netadd: data[4] * 256 + data[5],
-                                endpoint: data[6]
-                            }
-                        }).then(function(dev){
-                            if( dev.type == Constants.DEVTYPE_CURTAIN) {
-                                console.log("Curtain up");
-                            }
-                        }).catch(function(err) {
-                            console.log("Error-3 " + err);
-                            console.log(err.stack);
-                        });
-                    }
-                }).catch(function(err){
-                    console.log("Error-2 " + err);
-                    console.log(err.stack);
-                });
-                /*if (commandTrig){
-                    commandTrig(data);
-                }*/
+                    }).catch(function(err){
+                        myLog("Error-2 " + err);
+                        myLog(err.stack);
+                    });
+                    /*if (commandTrig){
+                        commandTrig(data);
+                    }*/
+                }
+                if (data[2] == 0x33) {
+                    var addr = data[4] * 256 + data[5];
+                    var response = {
+                        message:"JOIN-INFO-REQ",
+                        netadd: addr.toString(16),
+                        endpoint: data[6],
+                        buttonId: data[3]
+                    };
+                    myLog("Response: " + JSON.stringify(response));
+                    Notifier.emit('joininfo', JSON.stringify(response));
+                }
             }
-            if (data[2] == 0x33) {
-                var addr = data[4] * 256 + data[5];
-                var response = {
-                    message:"JOIN-INFO-REQ",
-                    netadd: addr.toString(16),
-                    endpoint: data[6],
-                    buttonId: data[3]
-                };
-                console.log("Response: " + JSON.stringify(response));
-                Notifier.emit('joininfo', JSON.stringify(response));
+            catch (err) {
+                myLog("Error-1 " + err);
+                myLog(err.stack);
             }
         }
-        catch (err) {
-            console.log("Error-1 " + err);
-            console.log(err.stack);
+        else if ( data[1] == 0x34 ){ // "4": error device -> ZAP 
+            if(data[3] != 0x30) { 
+                var now = new Date();
+                var sceneActionMessage = {
+                    type: "Error",
+                    time: (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()),
+                };
+                sceneActionMessage.name = "Send message " + (data[2] - 0x30) + " - " + (data[3] - 0x30);
+                sceneActionMessage.action = "occurred";
+                myLog("Emit error: " + JSON.stringify(sceneActionMessage));
+                Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
+            }
         }
     }
     // serialPort.flush(function(){
-    //     console.log("Flush Buffer");
+    //     myLog("Flush Buffer");
     // })
 })
 
@@ -305,28 +386,28 @@ var Task = sequelize.define('task', {
     hooks: {
         afterCreate: function(tsk, option) {
             if (taskPool[tsk.id] != null) taskPool[tsk.id].clear()
-            if (tsk.active) {
+            if (tsk && tsk.active) {
                 var schedule = later.parse.text("at " +  tsk.time)
                 taskPool[tsk.id] = later.setInterval(function() {
                     command({
                         id: tsk.deviceId,
                         act: tsk.action ? 'on' : 'off'
                     }, function(res) {
-                        console.log(res)
+                        myLog(res)
                     })
                 }, schedule);
             }
         },
         afterUpdate: function(tsk, option) {
             if (taskPool[tsk.id] != null) taskPool[tsk.id].clear()
-            if (tsk.active) {
+            if (tsk && tsk.active) {
                 var schedule = later.parse.text("at " + tsk.time)
                 taskPool[tsk.id] = later.setInterval(function() {
                     command({
                         id: tsk.deviceId,
                         act: tsk.action ? 'on' : 'off'
                     }, function(res) {
-                        console.log(res)
+                        myLog(res)
                     });
                 }, schedule);
             }
@@ -486,9 +567,9 @@ var taskPool = new Array();
 
 // var t = later.setInterval(function(){
 //     command({id: 1, act: 'on'}, function(res) {
-//         console.log(res)
+//         myLog(res)
 //         command({id: 1, act: 'off'},function(res) {
-//             console.log(res)
+//             myLog(res)
 //         })
 //     })
 // }, sched);
@@ -497,14 +578,20 @@ function loadKodiParams() {
     kodiIP = getParam('kodiIP');
     kodiUser = getParam('kodiUser');
     kodiPassword = getParam('kodiPassword');
-    console.log("kodiIP:" + kodiIP);
-    console.log("kodiUser:" + kodiUser);
-    console.log("kodiPassword:" + kodiPassword);
+    myLog("kodiIP:" + kodiIP);
+    myLog("kodiUser:" + kodiUser);
+    myLog("kodiPassword:" + kodiPassword);
 }
 function loadNetatmoParams() {
     netatmoURL = getParam('netatmoURL');
     netatmoUser = getParam('netatmoUser');
     netatmoURL = getParam('netatmoPassword');
+}
+
+function onStartupSuccess() {
+}
+
+function onStartupError() {
 }
 
 Meteor.startup(function() {
@@ -519,23 +606,27 @@ Meteor.startup(function() {
                             id: tsk[i].deviceId,
                             act: tsk[i].action ? 'on' : 'off'
                         }, function(res) {
-                            console.log(res)
+                            myLog(res)
                         });
                     }, schedule);
                 }
             }
+            onStartupSuccess();
             future.return();
         }).catch(function(e) { 
-            console.log("Select all tasks " + e); 
+            myLog("Select all tasks " + e); 
+            onStartupError();
             future.return();
         });
     }).catch(function(e) {
-        console.log("Database sync " + e);
+        onStartupError();
+        myLog("Database sync " + e);
         future.return();
     });
     future.wait();
     loadKodiParams();
     loadNetatmoParams();
+    scheduleCheck(nCheck, checkAll);
 });
 
 function addGroup(arg, callback) {
@@ -631,7 +722,7 @@ function addDevice(arg, callback) {
                 groupId: isNaN(arg.groupId) || parseInt(arg.groupId) < 1 ? undefined : parseInt(arg.groupId)
             }
         }).then(function(dev) {
-            console.log("device:");
+            myLog("device:");
             if (dev) {
                 callback({
                     success: false,
@@ -705,7 +796,6 @@ function updateDevice(arg, callback) {
             },
             individualHooks: true
         }).then(function(res) {
-            console.dir(res);
             if (res[0] > 0) callback({
                 success: true,
                 group: res[1][0].toJSON()
@@ -715,7 +805,7 @@ function updateDevice(arg, callback) {
                 message: 'Không tìm thấy thiết bị này.'
             });
         }).catch(function(err) {
-            console.log(err);
+            myLog(err);
             callback({
                 success: false,
                 message: err.toString()
@@ -731,9 +821,9 @@ function updateDevice(arg, callback) {
 }
 Meteor.publish('data', function(token) {
     var self = this;
-    console.log('publish: token=' + token);
+    myLog('publish: token=' + token + " | " + process.env.TOKEN);
     if (token != process.env.TOKEN) {
-        console.log("Wrong token");
+        myLog("Wrong token: " + token + " | " + process.env.TOKEN);
         return;
     }
 
@@ -812,15 +902,15 @@ Meteor.publish('data', function(token) {
         self.added('group', grp.id, value);
     });
     Group.addHook('afterUpdate', self._session.id, function(grp, option) {
-        console.log(grp);
+        myLog(grp);
         if (grp._changed.parentId) {
             Group.findAll({
                 hierarchy: true
             }).then(function(grpp) {
                 var oldParentNode = findTree(grpp[0].toJSON(), grp._previousDataValues.parentId);
                 var newParentNode = findTree(grpp[0].toJSON(), grp.parentId);
-                console.log(oldParentNode);
-                console.log(newParentNode);
+                myLog(oldParentNode);
+                myLog(newParentNode);
                 if (oldParentNode) {
                     var childtemp = []
                     if (oldParentNode.children)
@@ -855,7 +945,7 @@ Meteor.publish('data', function(token) {
     });
     Device.addHook('afterUpdate', self._session.id, function(dev, option) {
         self.changed('device', dev.id, dev.toJSON());
-        console.log('Device updated');
+        myLog('Device updated');
     });
     Device.addHook('beforeDestroy', self._session.id, function(dev, option){
         Favorite.destroy({
@@ -895,14 +985,14 @@ Meteor.publish('data', function(token) {
         self.removed('scene', scene.id);
     });
     SceneDev.addHook('afterCreate', self._session.id, function(sceneDev, option){
-        console.log('scenedev added');
+        myLog('scenedev added');
         self.added('scenedev', sceneDev.id, sceneDev.toJSON());
     });
     SceneDev.addHook('afterUpdate', self._session.id, function(sceneDev, option){
         self.changed('scenedev', sceneDev.id, sceneDev.toJSON());
     });
     SceneDev.addHook('afterDestroy', self._session.id, function(sceneDev, option){
-        console.log('afterDestroy sceneDev ' + sceneDev.id);
+        myLog('afterDestroy sceneDev ' + sceneDev.id);
         self.removed('scenedev', sceneDev.id);
     });
     self.onStop(function() {
@@ -934,6 +1024,17 @@ function permitjoin(info, callback) {
     callback(res);
 }
 
+function writeToSerialPort(devCmd, callback) {
+    limiter.removeTokens(1, function(error, remainingRequests) {
+        if(error) {
+            myLog("ERRORRRR:" + error);
+        }
+        else {
+            serialPort.write(devCmd, callback);
+        }
+    });
+}
+
 function command(input, callback) {
     Device.findOne({
         where: {
@@ -944,16 +1045,16 @@ function command(input, callback) {
             var devCtrl = new Buffer(8);
             devCtrl[0] = 0x44;
             devCtrl[1] = 0x31;
-            devCtrl[2] = 0x34;
+            devCtrl[2] = useBcast?0x32:0x34;
             devCtrl[3] = dev.idx;
             devCtrl[4] = dev.netadd / 256;
             devCtrl[5] = dev.netadd % 256;
             devCtrl[6] = dev.endpoint;
-            devCtrl[7] = input.act == 'on' ? 0x31 : input.act == 'off' ? 0x30 : input.act == 'status' ? 0x32 : 0x0;
-            serialPort.write(devCtrl, function(err, results) {
-                console.log('err ' + err);
-                console.log('results ' + results);
-                console.log(devCtrl);
+            devCtrl[7] = input.act == 'on' ? 0x31 : input.act == 'off' ? 0x30 : input.act == 'status' ? 0x32 : input.act == 'toggle'? 0x35 : 0x0;
+            writeToSerialPort(devCtrl, function(err, results) {
+                myLog('err ' + err);
+                myLog('results ' + results);
+                myLog(devCtrl);
             });
         }
         else {
@@ -1006,10 +1107,10 @@ function command(input, callback) {
                         commandInfo = undefined;
                     }
                 };
-                serialPort.write(devCtrl, function(err, results) {
-                    console.log('err ' + err);
-                    console.log('results ' + results);
-                    console.log(devCtrl);
+                writeToSerialPort(devCtrl, function(err, results) {
+                    myLog('err ' + err);
+                    myLog('results ' + results);
+                    myLog(devCtrl);
                 });
             }
             else callback({
@@ -1049,8 +1150,8 @@ function command(input, callback) {
 //     })
 // }, 5000)
 function doScene(sceneId) {
-    if(sceneId == -1) { // Default scene
-        Device.findAll({
+    if(sceneId == -1) { // Default scene - Turn Off All
+        /*Device.findAll({
             where: { 
                 type: {
                     //$in: [0,1,2,3]
@@ -1068,8 +1169,11 @@ function doScene(sceneId) {
             }
             emitSceneAction(-1);
         }).catch(function(err){
-            console.log("Error: " + err.toString());
-        });
+            myLog("Error: " + err.toString());
+        });*/
+        // SEND Command broadcast
+        sendTurnOffAll();
+        scheduleCheck(nCheck, checkAll);
     }
     else {
         SceneDev.findAll({
@@ -1078,29 +1182,82 @@ function doScene(sceneId) {
             }
         }).then(function(sds) {
             for( var i = 0; i < sds.length; i++ ) {
+                var actVals = ['off','on','toggle'];
+                var sdAction = parseInt(sds[i].action);
+                if (sdAction < 0 || sdAction >= actVals.length) sdAction = 0;
                 command({
                     id:sds[i].devId,
-                    act: sds[i].action?'on':'off'
+                    act: actVals[sdAction]
                 }, function(res) {
-                    console.log(res);
+                    myLog(res);
                 });
             }
             emitSceneAction(sceneId);
         }).catch(function(err){
-            console.log("Error: " + err.toString());
+            myLog("Error: " + err.toString());
         });
     }
 }
+
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length; i; i--) {
+        j = Math.floor(Math.random() * i);
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+    }
+}
+
+function checkAll() {
+    Device.findAll({
+        where: {
+            type: {
+                //$in: [0,1,2,3]
+                $in: [0]
+            }
+        }
+    }).then(function(devices) {
+        shuffle(devices);
+        for( var i = 0; i < devices.length; i++ ) {
+            command({
+                id:devices[i].id,
+                act: 'status'
+            }, function(res) {
+                console.dir(res);
+            });
+        }
+    }).catch(function(err){
+        myLog("Check All error: " + err.toString());
+    });
+}
+
+function scheduleCheck(ntime, callback) {
+    var count = ntime;
+    function doIt() {
+        myLog("Check ALL: " + count);
+        callback();
+        if(count > 0) { 
+            count--;
+            setTimeout(doIt, 5000 + Math.floor(Math.random() * 5000));
+        }
+    }
+    if(count > 0) {
+        count--;
+        setTimeout(doIt, 1000 + Math.floor(Math.random() * 1000));
+    }
+}
+
 function emitSceneAction(sceneId) {
     var now = new Date();
     var sceneActionMessage = {
-        type: Constants.DEVTYPE_SCENE,
+        type: "Scene",
         time: (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()),
     };
     if(sceneId == -1) {
         sceneActionMessage.name = "TURN OFF ALL";
         sceneActionMessage.action = "activated";
-        console.log("Emit: " + JSON.stringify(sceneActionMessage));
+        myLog("Emit: " + JSON.stringify(sceneActionMessage));
         Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
     }
     else {
@@ -1111,7 +1268,7 @@ function emitSceneAction(sceneId) {
         }).then(function(scene) {
             sceneActionMessage.name = scene.name;
             sceneActionMessage.action = "activated";
-            console.log("Emit: " + JSON.stringify(sceneActionMessage));
+            myLog("Emit: " + JSON.stringify(sceneActionMessage));
             Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
         }).catch(function(){});
     }
@@ -1134,21 +1291,21 @@ function curtainUp(curtainId) {
             devCtrl[6] = dev.endpoint;
             //devCtrl[7] = input.act == 'on' ? 0x31 : input.act == 'off' ? 0x30 : input.act == 'status' ? 0x32 : 0x0;
             devCtrl[7] = 0x31; // "1" --> action "on"
-            console.log('Write curtain up command');
-            serialPort.write(devCtrl, function(err, results) {
-                console.log('err ' + err);
-                console.log('results ' + results);
-                console.log(devCtrl);
+            myLog('Write curtain up command');
+            writeToSerialPort(devCtrl, function(err, results) {
+                myLog('err ' + err);
+                myLog('results ' + results);
+                myLog(devCtrl);
             });
         }
         else {
-            console.log({
+            myLog({
                 success: false,
                 message: "Không có thiết bị nào tương ứng"
             });
         }
     }).catch(function(err) {
-        console.log(err.stack);
+        myLog(err.stack);
     });
 }
 function curtainDown(curtainId) {
@@ -1168,27 +1325,78 @@ function curtainDown(curtainId) {
             devCtrl[6] = dev.endpoint;
             //devCtrl[7] = input.act == 'on' ? 0x31 : input.act == 'off' ? 0x30 : input.act == 'status' ? 0x32 : 0x0;
             devCtrl[7] = 0x31; // "1" --> action "on"
-            console.log('Write curtain down command');
-            serialPort.write(devCtrl, function(err, results) {
-                console.log('err ' + err);
-                console.log('results ' + results);
-                console.log(devCtrl);
+            myLog('Write curtain down command');
+            writeToSerialPort(devCtrl, function(err, results) {
+                myLog('err ' + err);
+                myLog('results ' + results);
+                myLog(devCtrl);
             });
         }
         else {
-            console.log({
+            myLog({
                 success: false,
                 message: "Không có thiết bị nào tương ứng"
             });
         }
     }).catch(function(err) {
-        console.log(err.stack);
+        myLog(err.stack);
+    });
+}
+function curtainStop(curtainId) {
+    Device.findOne({
+        where: {
+            id: curtainId
+        }
+    }).then(function(dev) {
+        if (dev) {
+            limiter.removeTokens(1, function(error, remainingRequests) {
+                var upCmd = new Buffer(8);
+                upCmd[0] = 0x44;
+                upCmd[1] = 0x31;
+                upCmd[2] = 0x34;
+                upCmd[3] = dev.idx1; // Button 1 --> Up curtain
+                upCmd[4] = dev.netadd / 256;
+                upCmd[5] = dev.netadd % 256;
+                upCmd[6] = dev.endpoint;
+                upCmd[7] = 0x31; // "1" --> action "on"
+                myLog('Write curtain up command');
+                serialPort.write(upCmd, function(err, results) {
+                    myLog('err ' + err);
+                    myLog('results ' + results);
+                    myLog(upCmd);
+                });
+
+                var downCmd = new Buffer(8);
+                downCmd[0] = 0x44;
+                downCmd[1] = 0x31;
+                downCmd[2] = 0x34;
+                downCmd[3] = dev.idx; // Button 0 --> Down curtain
+                downCmd[4] = dev.netadd / 256;
+                downCmd[5] = dev.netadd % 256;
+                downCmd[6] = dev.endpoint;
+                downCmd[7] = 0x31; // "1" --> action "on"
+                myLog('Write curtain down command');
+                serialPort.write(downCmd, function(err, results) {
+                    myLog('err ' + err);
+                    myLog('results ' + results);
+                    myLog(downCmd);
+                });
+            });
+        }
+        else {
+            myLog({
+                success: false,
+                message: "Không có thiết bị nào tương ứng"
+            });
+        }
+    }).catch(function(err) {
+        myLog(err.stack);
     });
 }
 Meteor.methods({
     com: function(input) {
         command(input, function(res) {
-            console.log(res);
+            myLog(res);
         });
     },
     com2: function(input) {
@@ -1208,10 +1416,10 @@ Meteor.methods({
                 devCtrl[6] = dev.endpoint;
                 devCtrl[7] = input.act == 'on' ? 0x31 : input.act == 'off' ? 0x30 : input.act == 'status' ? 0x32 : 0x0;
                 if (input.act == 'on' || input.act == 'off' || input.act == 'status') {
-                    serialPort.write(devCtrl, function(err, results) {
-                        console.log(devCtrl);
-                        console.log('err ' + err);
-                        console.log('results ' + results);
+                    writeToSerialPort(devCtrl, function(err, results) {
+                        myLog(devCtrl);
+                        myLog('err ' + err);
+                        myLog('results ' + results);
                     });
                 }
             }
@@ -1220,7 +1428,7 @@ Meteor.methods({
     },
     permit: function(info) {
         permitjoin(info, function(res) {
-            console.log("permit:" + res);
+            myLog("permit:" + res);
         });
     },
     stopPermit: function() {
@@ -1229,13 +1437,13 @@ Meteor.methods({
         messper[1] = 0x31;
         messper[2] = 0x32;
         messper[3] = 0x00;
-        serialPort.write(messper);
+        writeToSerialPort(messper);
     },
     addDevice: function(arg) {
-        console.log('addDevice:' + arg);
+        myLog('addDevice:' + arg);
         addDevice(arg, function(res) {
-            console.log('addDevice result:');
-            console.log(res);
+            myLog('addDevice result:');
+            myLog(res);
         });
     },
     updateDevice: function(arg) {
@@ -1243,39 +1451,39 @@ Meteor.methods({
     },
     removeDevice: function(arg) {
         removeDevice(arg, function(res) { 
-            console.log('removeDevice result:');
-            console.log(res);
+            myLog('removeDevice result:');
+            myLog(res);
         })
     },
     addGroup: function(arg) {
         addGroup(arg, function(res) {
-            console.log('addGroup result:');
-            console.log(res);
+            myLog('addGroup result:');
+            myLog(res);
         })
     },
     updateGroup: function(arg) {
         updateGroup(arg, function(res) {
-            console.log('updateGroup result:');
-            console.log(res);
+            myLog('updateGroup result:');
+            myLog(res);
         })
     },
     removeGroup: function(arg) {
         removeGroup(arg, function(res) {
-            console.log('removeGroup result:');
-            console.log(res);
+            myLog('removeGroup result:');
+            myLog(res);
         })
     },
     addTask: function(arg) {
         if (arg) {
             arg.active = true;
             Task.create(arg).then(function(tsk) {
-                console.log("addTask: " + tsk.toJSON());
+                myLog("addTask: " + tsk.toJSON());
             }).catch(function(err) {
-                console.log("addTask: " + err);
+                myLog("addTask: " + err);
             });
         }
         else {
-            console.log("Invalid input parameters");
+            myLog("Invalid input parameters");
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1284,12 +1492,12 @@ Meteor.methods({
             Task.findById(arg.id).then(function(tsk) {
                 if (tsk)
                     tsk.update(arg).then(function(res) {
-                        console.log('updateTask: ' + res.toJSON());
+                        myLog('updateTask: ' + res.toJSON());
                     });
             });
         }
         else {
-            console.log("Invalid input parameters");
+            myLog("Invalid input parameters");
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1300,7 +1508,7 @@ Meteor.methods({
             });
         }
         else {
-            console.log("Invalid input parameters " + arg);
+            myLog("Invalid input parameters " + arg);
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1308,13 +1516,13 @@ Meteor.methods({
         if(arg) {
             arg.active = true;
             Scene.create(arg).then(function(scene) {
-                console.log("addScene: success");
+                myLog("addScene: success");
             }).catch(function(err) {
-                console.log("addScene: error " + err);
+                myLog("addScene: error " + err);
             });
         }
         else {
-            console.log('failure ' + arg);
+            myLog('failure ' + arg);
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1326,13 +1534,13 @@ Meteor.methods({
                 },
                 individualHooks: true
             }).then(function(){
-                console.log('removeScene: success');
+                myLog('removeScene: success');
             }).catch(function(err){
-                console.log('removeScene: error ' + err);
+                myLog('removeScene: error ' + err);
             });
         }
         else {
-            console.log('failure ' + arg);
+            myLog('failure ' + arg);
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1341,7 +1549,7 @@ Meteor.methods({
             doScene(parseInt(arg));
         }
         else {
-            console.log('failure ' + arg);
+            myLog('failure ' + arg);
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1351,13 +1559,13 @@ Meteor.methods({
                 sceneId: parseInt(arg),
                 action: true
             }).then(function() {
-                console.log('Success');
+                myLog('Success');
             }).catch(function(err){
-                console.log(err.toString());
+                myLog(err.toString());
             });
         }
         else {
-            console.log('failure ' + arg);
+            myLog('failure ' + arg);
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1368,13 +1576,13 @@ Meteor.methods({
                     id: parseInt(arg.id)
                 }
             }).then(function() {
-                console.log('updateSceneDev:Success');
+                myLog('updateSceneDev:Success');
             }).catch(function(err) {
-                console.log(err.toString());
+                myLog(err.toString());
             });
         }
         else {
-            console.log('failure ' + arg);
+            myLog('failure ' + arg);
             return {success:false, message:"Invalid data input"};
         }
     },
@@ -1384,9 +1592,9 @@ Meteor.methods({
                 where: {id: parseInt(arg)},
                 individualHooks: true
             }).then(function(){
-                console.log("Done then");
+                myLog("Done then");
             }).catch(function(err){
-                console.log("Done error")
+                myLog("Done error")
             });
         }
         else {
@@ -1409,7 +1617,7 @@ Meteor.methods({
         }
     },
     configNetatmo: function(arg) {
-        console.log("configNetatmo");
+        myLog("configNetatmo");
         console.dir(arg)
         if(arg) {
             if( !setParam('netatmoURL', arg.netatmoURL) ) 
@@ -1427,13 +1635,10 @@ Meteor.methods({
     },
     curtainUp: curtainUp,
     curtainDown: curtainDown,
-    curtainStop: function(arg) {
-        curtainUp(arg);
-        curtainDown(arg);
-    },
+    curtainStop: curtainStop,
     syncClock: function(timestamp) {
         var offset = Math.abs(Date.now() - timestamp);
-        console.log("offset:" + offset);
+        myLog("offset:" + offset);
         function pad(n) {
             return (n < 10) ? ("0" + n) : n;
         }
@@ -1442,25 +1647,25 @@ Meteor.methods({
             var timeStr = currentTime.getFullYear() + "-" + pad(currentTime.getMonth() + 1)
                         + "-" + currentTime.getDate() + " " + currentTime.getHours()
                         + ":" + pad(currentTime.getMinutes()) + ":" + pad(currentTime.getSeconds());
-            console.log(timeStr);
+            myLog(timeStr);
             var timeSyncProcess = spawn(process.env.TIME_SYNC, [timeStr]);
             timeSyncProcess.on('error', function(err){
-                console.log('timeSync:Error:' + err);
+                myLog('timeSync:Error:' + err);
             });
             timeSyncProcess.stdout.on('data', function(data) {
-                console.log('timeSync:output:' + data);
+                myLog('timeSync:output:' + data);
             });
         }
         else {
-            console.log("No need to sync time");
+            myLog("No need to sync time");
         }
     },
     getDHomeClock: function() {
         var now = Date.now();
         var currentTime = new Date(now);
-        console.log(now + " =? " + currentTime);
+        myLog(now + " =? " + currentTime);
         var timeStr = currentTime.getHours() + ":" + currentTime.getMinutes() + ":" + currentTime.getSeconds();
-        console.log(timeStr);
+        myLog(timeStr);
         return {timestamp:now, time:timeStr};
     }
 });

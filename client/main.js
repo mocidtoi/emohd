@@ -6,18 +6,21 @@ import './main.html';
 
 Meteor.startup(function(){
     var language = window.localStorage.getItem("__lang");
-//    alert("Language:" + language);
     if(!language) {
         language = 'vn';
         window.localStorage.setItem("__lang", language);
     }
     TAPi18n.setLanguage(language).done(function() {
-//        alert("Set Language:" + language);
         console.log('Set language ' + language);
     }).fail(function() {
-//        alert("Failed in Set language:" + language);
         console.log('Failed to set language ' + language);
     });
+
+    if (Meteor.isCordova) {
+        document.addEventListener("backbutton", function () {
+            console.log("Back button pressed");
+        });
+    }
 
     Meteor.apply('syncClock', [Date.now()], {wait:false}, function(err, res) {
         console.log(err);
@@ -118,17 +121,11 @@ Template.AddBtn.helpers({
 
 
 Template.LoadingScreen1.onRendered(function() {
-    Session.set('loading', true);
+    Session.set('loading-screen1', true);
 });
 
 Template.LoadingScreen1.onDestroyed(function() {
-    Session.set('loading', false);
-});
-
-Template.LoadingScreen.helpers({
-    hide: function() {
-        return (Session.get('loading'))?"hide":"";
-    }
+    Session.set('loading-screen1', false);
 });
 
 var loadingEventHandlers = {
@@ -145,7 +142,7 @@ var loadingEventHandlers = {
         if(Meteor.isCordova) {
             cordova.plugins.barcodeScanner.scan(
                 function (result) {
-                    if(result.text) {
+                    if(result && result.text) {
                         var configJSON = JSON.parse(result.text);
                         if(configJSON.root_url && configJSON.token) {
                             zeroconf_discover(function(error, res) {
@@ -155,17 +152,14 @@ var loadingEventHandlers = {
                             });
                         }
                         else {
-                            alert("We got a barcode\n" +
+                            alert("We got a barcode but incorrect format\n" +
                                 "Result: " + result.text + "\n" +
                                 "Format: " + result.format + "\n" +
                                 "Cancelled: " + result.cancelled);
                         }
                     }
                     else {
-                        alert("We got a barcode\n" +
-                            "Result: " + result.text + "\n" +
-                            "Format: " + result.format + "\n" +
-                            "Cancelled: " + result.cancelled);
+                        alert("Error: barcode infor is null/undefined");
                     }
                 }, 
                 function (error) {
@@ -173,6 +167,9 @@ var loadingEventHandlers = {
                 }
             );
         }
+    },
+    'click #wificonfig': function() {
+        Router.go('/admin');
     }
 };
 
@@ -180,8 +177,11 @@ Template.LoadingScreen.events(loadingEventHandlers);
 Template.LoadingScreen1.events(loadingEventHandlers);
 
 Template.LoadingScreen.helpers({
+    hide: function() {
+        return (Session.get('loading-screen1'))?"hide":"";
+    },
     connStatus: function() {
-        if (!Meteor.status().connected) {
+        if (!Meteor.status().connected && !(AdminConnection && AdminConnection.status().connected)) {
             Session.set('status-message', 'Connecting to DHome');
             return "";
         }

@@ -6,26 +6,32 @@ Constants = {
     SHUFFLE: 1,
     PREVIOUS: 2,
     PLAYPAUSE: 3,
-    NEXT: 4
+    NEXT: 4,
+    LED_FILE: '/sys/class/leds/beaglebone:green:usr2',
+//    LED_FILE: '/Users/remurd/workspace/meteor/emohd/beaglebone:green:usr2',
+    ADMIN_URL:"http://169.254.10.1:8090/"
+    //ADMIN_URL:"http://localhost:5000/"
 };
 
 TOKEN=null;
 Router.configure({
     layoutTemplate: 'ApplicationLayout',
+    loadingTemplate: 'LoadingScreen1',
     waitOn: function() {
         console.log('Subscribe data: token=' + TOKEN);
         var res = Meteor.subscribe('data', TOKEN);
         return [ res ];
-    },
-    loadingTemplate: 'LoadingScreen1'
+    }
 });
 var homeRouteOpt = {
+    layoutTemplate:"ApplicationLayout",
     action: function() {
         this.render('Favorites');
         setActiveTab(1);
     }
 };
 Router.route('/Rooms', {
+    layoutTemplate:"ApplicationLayout",
     action: function() {
         this.render('Rooms');
         setupModalAddRoom(this);
@@ -37,6 +43,7 @@ Router.route('/Rooms', {
 Router.route('/', homeRouteOpt);
 Router.route('/Favorites', homeRouteOpt);
 Router.route('/Scenes', {
+    layoutTemplate:"ApplicationLayout",
     action: function() {
         setActiveTab(3);
         this.render('Scenes');
@@ -44,6 +51,7 @@ Router.route('/Scenes', {
     }
 });
 Router.route('/Notifications', {
+    layoutTemplate:"ApplicationLayout",
     action: function() {
         Session.set("title", "Notifications");
         setActiveTab(4);
@@ -51,6 +59,7 @@ Router.route('/Notifications', {
     }
 });
 Router.route('/More', {
+    layoutTemplate:"ApplicationLayout",
     action: function() {
         setActiveTab(5);
         Session.set("title", TAPi18n.__("More") + " ...");
@@ -60,6 +69,7 @@ Router.route('/More', {
 });
 
 Router.route('/Device/:gid/:id', {
+    layoutTemplate:"ApplicationLayout",
     action: function() {
         Session.set("title", "_");
         this.render('Device');
@@ -72,6 +82,7 @@ Router.route('/Device/:gid/:id', {
 });
 
 Router.route('/Scene/:scid', {
+    layoutTemplate:"ApplicationLayout",
     action: function() {
         Session.set("title", "_");
         this.render("Scene");
@@ -82,6 +93,7 @@ Router.route('/Scene/:scid', {
     }
 });
 Router.route('/Musics', {
+    layoutTemplate:"ApplicationLayout",
     waitOn: function() {
         console.log('Subscribe music: token=' + TOKEN);
         var res = Meteor.subscribe('music', TOKEN);
@@ -98,6 +110,73 @@ Router.route('/Musics', {
         setActiveTab(-1);
     }
 });
+
+/*=======================================================
+ *  ADMINISTRATION MODE
+ *=======================================================*/
+Router.configure({
+    layoutTemplate: 'AdminLayout'
+});
+
+Router.route('/admin', {
+    layoutTemplate: 'AdminLayout',
+    loadingTemplate: 'AdminLoading',
+    action:function() {
+        this.render('navbar', {to: "navbar"});
+        this.render('signin');
+    },
+    waitOn: function() {
+        if(!AdminConnection) {
+            AdminConnection=DDP.connect(Constants.ADMIN_URL);
+        }
+        Meteor.setTimeout(function(){
+            if(!notifier) adminNotifier();
+        }, 1000);
+    }
+});
+Router.route('/admin/signin', {
+    layoutTemplate: 'AdminLayout',
+    loadingTemplate: 'AdminLoading',
+    action: function() {
+        this.render('navbar', {to: "navbar"});
+        this.render('signin');
+    },
+    waitOn: function() {
+        if(!AdminConnection) {
+            AdminConnection=DDP.connect(Constants.ADMIN_URL);
+        }
+        Meteor.setTimeout(function(){
+            if(!notifier) adminNotifier();
+        }, 1000);
+    }
+});
+Router.route('/admin/config', {
+    layoutTemplate: 'AdminLayout',
+    loadingTemplate: 'AdminLoading',
+    action:function() {
+        this.layout('AdminLayout');
+        this.render('navbar', {to: "navbar"});
+        this.render('config');
+    },
+    waitOn: function() {
+        if(!AdminConnection) {
+            AdminConnection=DDP.connect(Constants.ADMIN_URL);
+        }
+        Meteor.setTimeout(function(){
+            if(!notifier) adminNotifier();
+        }, 1000);
+        return AdminConnection.subscribe('netconfigs');
+    }
+});
+Router.route('/admin/Guide', {
+    layoutTemplate: 'AdminLayout',
+    loadingTemplate: 'AdminLoading',
+    name: "Guide",
+    waitOn:null
+});
+
+/*=============== END ADMIN MODE ==================*/
+
 function isIPv4(str) {
     var blocks = str.split('.');
     if( blocks.length != 4 ) return false;
@@ -140,15 +219,20 @@ zeroconf_discover = function(callback) {
 
 reconfigServer = function(rootURL, serverKey) {
     if( Meteor.isClient ) {
-        window.localStorage.setItem("__root_url", rootURL);
-        if(serverKey) {
-            window.localStorage.setItem("__token", serverKey);
+        if(typeof(Storage) !== "undefined") {
+            window.localStorage.setItem("__root_url", rootURL);
+            if(serverKey) {
+                window.localStorage.setItem("__token", serverKey);
+            }
+            //alert("rootURL:" + rootURL + "\n" + serverKey);
+            
+            Meteor.setTimeout(function() {
+                window.location.reload();
+            }, 1000);
         }
-        //alert("rootURL:" + rootURL + "\n" + serverKey);
-        
-        Meteor.setTimeout(function() {
-            window.location.reload();
-        }, 1000);
+        else {
+            alert("Setting failed! No localStorage support");
+        }
     }
 }
 if (Meteor.isClient) {
@@ -167,6 +251,10 @@ if (Meteor.isClient) {
     Progress = new Mongo.Collection('progress');
 
     Meteor.Notification = new Queue(20);
+    ColorList = [
+        "bg-cyan-800", "bg-teal-800", "bg-indigo-800", 
+        "bg-blue-800", "bg-green-800", "bg-pink-800"
+    ];
     IconList = [
         {icon:"light", title:"Light", color:"bg-cyan-800"}, 
         {icon:"scene", title: "Command", color: "bg-teal-800"},

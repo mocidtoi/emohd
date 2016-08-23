@@ -15,11 +15,16 @@ Template.Scene.onRendered(function() {
             var sdId = parseInt(roomObj.attr('data-id'));
             var devId = parseInt(roomObj.attr('data-devId'));
             
+            var actionVal = 0;
+            if(actionObj.val() == "turn ON") actionVal = 1;
+            else if(actionObj.val() == "turn OFF") actionVal = 0;
+            else if(actionObj.val() == "TOGGLE") actionVal = 2;            
+
             var ret = Meteor.apply('updateSceneDev', [{
                 id: sdId,
                 devId: devId,
                 sceneId: sceneId,
-                action: (actionObj.val() == "turn ON")
+                action: actionVal
             }], {wait:false});
             console.log(ret);
         }
@@ -52,7 +57,7 @@ Template.Scene.onRendered(function() {
             theme: 'mobiscroll',
             lang: 'en',
             display: 'bottom',
-            inputClass: "text-right",
+            inputClass: "text-right padding-right-4-percent",
             minWidth: 200,
             onSelect: function(valueText, inst) {
                 Session.set('show-save-btn', true);
@@ -109,6 +114,7 @@ Template.Scene.onDestroyed(function() {
     handle2.stop();
 });
 
+Template.Scene.helpers(PageHelpers);
 Template.Scene.helpers({
     scene: function() {
         var id = parseInt(Router.current().params.scid);

@@ -17,4 +17,4 @@ App.setPreference('FadeSplashScreenDuration', "250");
 App.setPreference('ShowSplashScreenSpinner', "false");
 App.setPreference('StatusBarOverlaysWebView', "false");
 App.setPreference('StatusBarStyle', "default");
-
+App.accessRule('*');

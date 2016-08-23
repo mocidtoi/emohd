@@ -1,6 +1,6 @@
 <template name="Scene">
     <!-- Page -->
-    <div class="page-content container-fluid margin-top-70" style="padding-top: 17px">
+    <div class="page-content container-fluid margin-top-{{top_margin}}" style="padding-top: 17px">
         <div class="row" data-plugin="matchHeight" data-by-row="true">
             <div class="main-container">
                 <!-- Example List Divider -->
@@ -18,7 +18,7 @@
                             <ul class="clearfix group-select">
                                 {{#if sd.devId}}
                                 {{#with device sd.devId}}
-                                <li class="column-1" style="width: 40%;">
+                                <li class="column-1" style="width: 30%;">
                                     <select class="list-down" data-id="{{sd.id}}">
                                         {{#each r in rooms}}
                                         <optgroup label="{{r.name}}">
@@ -34,10 +34,11 @@
                                     <input type="text" class="mbsc-control mbsc-control-ev" readonly data-id="{{sd.id}}" data-devId="{{sd.devId}}" value="{{name}}">
                                 </li>
                                     {{/with}}
-                                <li class="last-column" style="width: 20%">
+                                <li class="last-column" style="width: 30%">
                                     <select class="list-down" data-id="{{sd.id}}">
                                         <option value=1 {{isSelected 1 sd.action}}>turn ON</option>
                                         <option value=0 {{isSelected 0 sd.action}}>turn OFF</option>
+                                        <option value=2 {{isSelected 2 sd.action}}>TOGGLE</option>
                                     </select>
                                 </li>
                                 {{/with}}
@@ -60,6 +61,7 @@
                                     <select class="list-down" data-id="{{sd.id}}">
                                         <option value=1 {{isSelected 1 sd.action}}>turn ON</option>
                                         <option value=0 {{isSelected 0 sd.action}}>turn OFF</option>
+                                        <option value=2 {{isSelected 2 sd.action}}>TOGGLE</option>
                                     </select>
                                 </li>
                                 {{/if}}

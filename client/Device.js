@@ -107,6 +107,7 @@ Template.Device.events({
     }
 });
 
+Template.Device.helpers(PageHelpers);
 Template.Device.helpers({
     device: function() {
         var devId = Router.current().params.id;

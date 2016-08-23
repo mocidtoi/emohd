@@ -59,7 +59,7 @@ Template.Rooms.helpers({
             break;
         default:
             try {
-                return Device.findOne(id).status == 49?"item-device":"item-device disabled";
+                return Device.findOne(id).status == 49?"item-device":"item-device off";
             }
             catch(err) {
                 return "item-device";
