@@ -1,0 +1,13 @@
+<template name="AdminLayout">
+        {{>yield "navbar"}}
+    <div class="transitions-container" style="height:100vh">
+        {{>yield}}
+    </div>
+        {{>yield "overlay"}}
+</template>
+
+<template name="AdminLoading">
+    <div style="margin-top: 80px">
+        <h3>Loading Dhome Admin</h3>
+    </div>
+</template>

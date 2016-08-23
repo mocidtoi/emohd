@@ -1,0 +1,17 @@
+<template name="signin">
+    <div class="transitions-content">
+    <div class="container {{adminConnected}}" data-transition-out="slideLeftOut" data-transition-in="slideLeftIn">
+        <h4 class="text-center" style="padding-top: 4em;color:#fff">SIGN IN</h4>
+        <p class="text-center text-danger bg-danger"><i>{{errorMsg}}</i></p>
+        <input type="text" id="inputUsername" class="form-control" placeholder="User name" required autofocus>
+        <p></p>
+        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        <p></p>
+        <button class="btn btn-lg btn-primary btn-block" id="Signin">Sign in</button>
+    </div>
+    <div class="container {{adminNotConnected}}" data-transition-out="slideLeftOut" data-transition-in="slideLeftIn">
+        <h4 class="text-center" style="padding-top: 4em;color:#fff">Connecting ...</h4>
+    </div>
+    </div>
+</template>
+

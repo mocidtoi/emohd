@@ -1,0 +1,35 @@
+<template name="config">
+    <div class="transitions-content">
+    <div class="container vcenter" style="min-height:50vh" data-transition-out="slideLeftOut" data-transition-in="slideLeftIn">
+        <h4 class="text-center" style="padding-top:4em;color:#fff">WIFI Configuration</h4>
+        <select id="profile" class="form-control">
+            <option value="-1">Select profile ...</option>
+            {{#each configs}}
+            <option value="{{id}}">{{ssid}}-{{ipaddress}}</option>
+            {{/each}}
+        </select>
+        <p></p>
+        <input type="text" id="inputSSID" class="form-control" placeholder="SSID" required autofocus>
+        <p></p>
+        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        <p></p>
+        <div class="checkbox">
+            <label>
+                <input id="dhcp" type="checkbox" value="Automatic assign IP" checked>Automatic assign IP
+            </label>
+        </div>
+        <p></p>
+        <div id="ipSetting" style="display:none">
+            <input type="text" id="inputIP" class="form-control" placeholder="IP Address" required>
+            <p></p>
+            <input type="text" id="inputMask" class="form-control" placeholder="255.255.255.0" required>
+            <p></p>
+            <input type="text" id="inputGW" class="form-control" placeholder="Gateway" required>
+        </div>
+        <p></p>
+        <button class="btn btn-lg btn-primary btn-block" id="ok">OK</button>
+        <button class="btn btn-lg btn-block" id="cancel">Cancel</button>
+    </div>
+    </div>
+</template>
+
