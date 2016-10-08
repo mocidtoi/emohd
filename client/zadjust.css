@@ -310,4 +310,5 @@ h4.loading-msg {
 }
 .list-group-item {
     border-left: none;
+    border-right: none;
 }

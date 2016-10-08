@@ -113,3 +113,6 @@
 .dicon-scene:before {
   content: "\77";
 }
+.dicon-signal:before {
+  content: "\79";
+}

@@ -45,6 +45,11 @@ Template.ModalAddDevice.CurtainSwitch = [
     {index: 3, region:"switch-4", active:"", in:"", pos:"col-xs-6 pos-rb"}
 ];
 
+Template.ModalAddDevice.singleLightSingleScene = [
+    {index: 0, region:"switch-1", active:"active", in:"in", pos:"col-xs-6 pos-lt", template:"FragmentAdd"},
+    {index: 1, region:"switch-2", active:"", in:"", pos:"col-xs-6 pos-rt", template:"FragmentAddScene"}
+];
+
 Template.ModalAddDevice.renderDoneCallback = null;
 
 function onDeviceAdded(templtInstance, idx) {

@@ -141,6 +141,7 @@ serialPort.on("open", function() {
 });
 
 //var commandTrig, commandInfo;
+/*
 var blinkTimerHandle;
 function zbLedOn() {
     myLog("zbLedOn");
@@ -155,7 +156,6 @@ function zbLedOff() {
 }
 
 function zbLedBlinkOne() {
-//    Fiber(function(){
         if(blinkTimerHandle) {
             clearTimeout(blinkTimerHandle);
         }
@@ -163,112 +163,110 @@ function zbLedBlinkOne() {
             zbLedOn();
         }
         blinkTimerHandle = setTimeout(zbLedOff, 1000);
-//    }).run();
 }
-
-serialPort.on('data', function(data) {
-    if (data[0] == 0x44) {
-        if(data[1] == 0x33) { //"D": start byte; "3": device -> ZAP)
-            //zbLedBlinkOne();
-            try {
-                if (data[2] == 0x34) { // Command response (E.g.: report on/off)
-                    Device.findOne({
-                        where: {
-                            idx: data[3],
-                            netadd: data[4] * 256 + data[5],
-                            endpoint: data[6]
-                        }
-                    }).then(function(dev){
-                        if(dev) {
-                            if(dev.sceneId && dev.type == Constants.DEVTYPE_SCENE) {
-                                myLog("Scene button: " + dev.sceneId);
-                                doScene(dev.sceneId);
+*/
+serialPort.on('data', Meteor.bindEnvironment(
+    function(data) {
+        if (data[0] == 0x44) {
+            if(data[1] == 0x33) { //"D": start byte; "3": device -> ZAP
+                //zbLedBlinkOne();
+                try {
+                    if (data[2] == 0x34) { // Command response (E.g.: report on/off
+                        Device.findOne({
+                            where: {
+                                idx: data[3],
+                                netadd: data[4] * 256 + data[5],
+                                endpoint: data[6]
                             }
-                            else if( dev.type == Constants.DEVTYPE_CURTAIN) {
-                                myLog("Curtain down");
+                        }).then(Meteor.bindEnvironment(function(dev){
+                            if(dev) {
+                                if(dev.sceneId && dev.type == Constants.DEVTYPE_SCENE) {
+                                    myLog("Scene button: " + dev.sceneId);
+                                    doScene(dev.sceneId);
+                                }
+                                else if( dev.type == Constants.DEVTYPE_CURTAIN) {
+                                    myLog("Curtain down");
+                                }
+                                else {
+                                    dev.status = data[7];
+                                    dev.save().then(function(thisDev){
+                                        myLog("change state success");
+                                        Favorite.findOne({
+                                            where:{deviceId:thisDev.id}
+                                        }).then(function(fav) {
+                                            fav.count = fav.count + 1;
+                                            fav.save();
+                                        }).catch(function(e){
+                                            myLog("Error " + e);
+                                            Favorite.create({
+                                                count:1, 
+                                                deviceId:thisDev.id
+                                            }).then(function(fav){
+                                                myLog("Create new fav");
+                                            });
+                                        });
+                                    }).catch(function(e){
+                                        myLog("Update device " + e);
+                                    });
+                                }
                             }
                             else {
-                                dev.status = data[7];
-                                dev.save().then(function(thisDev){
-                                    myLog("change state success");
-                                    Favorite.findOne({
-                                        where:{deviceId:thisDev.id}
-                                    }).then(function(fav) {
-                                        fav.count = fav.count + 1;
-                                        fav.save();
-                                    }).catch(function(e){
-                                        myLog("Error " + e);
-                                        Favorite.create({
-                                            count:1, 
-                                            deviceId:thisDev.id
-                                        }).then(function(fav){
-                                            myLog("Create new fav");
-                                        });
-                                    });
-                                }).catch(function(e){
-                                    myLog("Update device " + e);
+                                Device.findOne({
+                                    where: {
+                                        idx1: data[3],
+                                        netadd: data[4] * 256 + data[5],
+                                        endpoint: data[6]
+                                    }
+                                }).then(function(dev){
+                                    if( dev && dev.type == Constants.DEVTYPE_CURTAIN) {
+                                        myLog("Curtain up");
+                                    }
+                                }).catch(function(err) {
+                                    myLog("Error-3 " + err);
+                                    myLog(err.stack);
                                 });
                             }
-                        }
-                        else {
-                            Device.findOne({
-                                where: {
-                                    idx1: data[3],
-                                    netadd: data[4] * 256 + data[5],
-                                    endpoint: data[6]
-                                }
-                            }).then(function(dev){
-                                if( dev && dev.type == Constants.DEVTYPE_CURTAIN) {
-                                    myLog("Curtain up");
-                                }
-                            }).catch(function(err) {
-                                myLog("Error-3 " + err);
-                                myLog(err.stack);
-                            });
-                        }
-                    }).catch(function(err){
-                        myLog("Error-2 " + err);
-                        myLog(err.stack);
-                    });
-                    /*if (commandTrig){
-                        commandTrig(data);
-                    }*/
+                        })).catch(function(err){
+                            myLog("Error-2 " + err);
+                            myLog(err.stack);
+                        });
+                        /*if (commandTrig){
+                            commandTrig(data);
+                        }*/
+                    }
+                    if (data[2] == 0x33) {
+                        var addr = data[4] * 256 + data[5];
+                        var response = {
+                            message:"JOIN-INFO-REQ",
+                            netadd: addr.toString(16),
+                            endpoint: data[6],
+                            buttonId: data[3]
+                        };
+                        myLog("Response: " + JSON.stringify(response));
+                        Notifier.emit('joininfo', JSON.stringify(response));
+                    }
                 }
-                if (data[2] == 0x33) {
-                    var addr = data[4] * 256 + data[5];
-                    var response = {
-                        message:"JOIN-INFO-REQ",
-                        netadd: addr.toString(16),
-                        endpoint: data[6],
-                        buttonId: data[3]
+                catch (err) {
+                    myLog("Error-1 " + err);
+                    myLog(err.stack);
+                }
+            }
+            else if ( data[1] == 0x34 ){ // "4": error device -> ZAP 
+                if(data[3] != 0x30) { 
+                    var now = new Date();
+                    var sceneActionMessage = {
+                        type: "Error",
+                        time: (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()),
                     };
-                    myLog("Response: " + JSON.stringify(response));
-                    Notifier.emit('joininfo', JSON.stringify(response));
+                    sceneActionMessage.name = "Send message " + (data[2] - 0x30) + " - " + (data[3] - 0x30);
+                    sceneActionMessage.action = "occurred";
+                    myLog("Emit error: " + JSON.stringify(sceneActionMessage));
+                    Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
                 }
             }
-            catch (err) {
-                myLog("Error-1 " + err);
-                myLog(err.stack);
-            }
         }
-        else if ( data[1] == 0x34 ){ // "4": error device -> ZAP 
-            if(data[3] != 0x30) { 
-                var now = new Date();
-                var sceneActionMessage = {
-                    type: "Error",
-                    time: (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds()),
-                };
-                sceneActionMessage.name = "Send message " + (data[2] - 0x30) + " - " + (data[3] - 0x30);
-                sceneActionMessage.action = "occurred";
-                myLog("Emit error: " + JSON.stringify(sceneActionMessage));
-                Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
-            }
-        }
-    }
-    // serialPort.flush(function(){
-    //     myLog("Flush Buffer");
-    // })
-})
+    })
+);
 
 var Sequelize = Meteor.npmRequire('sequelize-hierarchy')();
 var sequelize = new Sequelize('database', null, null, {
@@ -387,6 +385,7 @@ var Task = sequelize.define('task', {
         afterCreate: function(tsk, option) {
             if (taskPool[tsk.id] != null) taskPool[tsk.id].clear()
             if (tsk && tsk.active) {
+                console.log("Schedule after creation");
                 var schedule = later.parse.text("at " +  tsk.time)
                 taskPool[tsk.id] = later.setInterval(function() {
                     command({
@@ -401,6 +400,7 @@ var Task = sequelize.define('task', {
         afterUpdate: function(tsk, option) {
             if (taskPool[tsk.id] != null) taskPool[tsk.id].clear()
             if (tsk && tsk.active) {
+                console.log("Schedule after update");
                 var schedule = later.parse.text("at " + tsk.time)
                 taskPool[tsk.id] = later.setInterval(function() {
                     command({
@@ -472,7 +472,7 @@ var SceneDev = sequelize.define('scenedev', {
         autoIncrement: true
     },
     action: {
-        type: Sequelize.BOOLEAN,
+        type: Sequelize.INTEGER,
         allowNull: false
     }
 }, {
@@ -562,6 +562,7 @@ function setParam(name, value, callback) {
 }
 
 var later = Meteor.npmRequire('later');
+later.date.localTime();
 var taskPool = new Array();
 
 
@@ -627,6 +628,11 @@ Meteor.startup(function() {
     loadKodiParams();
     loadNetatmoParams();
     scheduleCheck(nCheck, checkAll);
+    KodiReload();
+    kodiPlay(0, function(err, res) {
+        console.log("kodiPlay");
+        if(err) console.log(err);
+    });
 });
 
 function addGroup(arg, callback) {
@@ -862,8 +868,10 @@ Meteor.publish('data', function(token) {
         }
     });
     Task.findAll().then(function(tsk) {
-        for (var i = 0; i < tsk.length; i++) {
-            self.added('task', tsk[i].id, tsk[i].toJSON())
+        if(tsk) {
+            for (var i = 0; i < tsk.length; i++) {
+                self.added('task', tsk[i].id, tsk[i].toJSON())
+            }
         }
     });
     Favorite.findAll().then(function(fav) {
@@ -1042,6 +1050,7 @@ function command(input, callback) {
         }
     }).then(function(dev) {
         if (dev) {
+            console.log('action:' + input.act + '--');
             var devCtrl = new Buffer(8);
             devCtrl[0] = 0x44;
             devCtrl[1] = 0x31;
@@ -1150,6 +1159,8 @@ function command(input, callback) {
 //     })
 // }, 5000)
 function doScene(sceneId) {
+    console.log("doScene:" + sceneId + "--");
+    if(sceneId < -2 ) return;
     if(sceneId == -1) { // Default scene - Turn Off All
         /*Device.findAll({
             where: { 
@@ -1173,7 +1184,12 @@ function doScene(sceneId) {
         });*/
         // SEND Command broadcast
         sendTurnOffAll();
+        emitSceneAction(-1);
         scheduleCheck(nCheck, checkAll);
+    }
+    else if(sceneId == -2) { // PlayPause Audio
+        kodiPlayPause();
+        emitSceneAction(-2);
     }
     else {
         SceneDev.findAll({
@@ -1256,6 +1272,12 @@ function emitSceneAction(sceneId) {
     };
     if(sceneId == -1) {
         sceneActionMessage.name = "TURN OFF ALL";
+        sceneActionMessage.action = "activated";
+        myLog("Emit: " + JSON.stringify(sceneActionMessage));
+        Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));
+    }
+    if(sceneId == -2) {
+        sceneActionMessage.name = "MUSIC";
         sceneActionMessage.action = "activated";
         myLog("Emit: " + JSON.stringify(sceneActionMessage));
         Notifier.emit('sceneAction', JSON.stringify(sceneActionMessage));

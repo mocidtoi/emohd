@@ -37,18 +37,18 @@ Template.ModalConfig.helpers({
 Template.ModalConfig.events({
     'click button#KodiOk': function(event, instance){
         var params = new Object();
-        params.kodiIP = instance.$('#KodiIP').val();
-        params.kodiUser = instance.$('#KodiUser').val();
-        params.kodiPassword = instance.$('#KodiPassword').val();
+        params.kodiIP = instance.$('#KodiIP').val().trim();
+        params.kodiUser = instance.$('#KodiUser').val().trim();
+        params.kodiPassword = instance.$('#KodiPassword').val().trim();
         console.log(params);
         Meteor.apply('configKodi', [params], {wait: false});
     },
     'click button#NetatmoOk': function(event, instance) {
         Session.set('has-widget', true);
         var params = new Object();
-        params.netatmoURL = instance.$('#NetatmoURL').val();
-        params.netatmoUser = instance.$('#NetatmoUser').val();
-        params.netatmoPassword = instance.$('#NetatmoPassword').val();
+        params.netatmoURL = instance.$('#NetatmoURL').val().trim();
+        params.netatmoUser = instance.$('#NetatmoUser').val().trim();
+        params.netatmoPassword = instance.$('#NetatmoPassword').val().trim();
         console.log(params);
         Meteor.apply('configNetatmo', [params], {wait: false});
     }
@@ -61,9 +61,9 @@ Template.ModalSettings.helpers({
 
 Template.ModalSettings.events({
     'click button#settingsOk': function(event, instance) {
-        var dHomeIP = instance.$('#dhomeIP').val();
-        var dHomePort = instance.$('#dhomePort').val();
-        var dHomeKey = instance.$('#dhomeKey').val();
+        var dHomeIP = instance.$('#dhomeIP').val().trim();
+        var dHomePort = instance.$('#dhomePort').val().trim();
+        var dHomeKey = instance.$('#dhomeKey').val().trim();
         if( !dHomeIP || dHomeIP.length <= 0) {
             console.log("-" + dHomeIP + "_");
             instance.$('#dhomeIP').parent().addClass('has-error');

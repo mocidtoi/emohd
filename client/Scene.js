@@ -135,11 +135,8 @@ Template.Scene.helpers({
     },
     devices: function(roomId) {
         return Device.find({
-            groupId:roomId
-        }).map(function(dev){
-            if( dev.type != Constants.DEVTYPE_SCENE )
-                return dev;
-        });
+            groupId:roomId, $nor:[{type:Constants.DEVTYPE_SCENE}]
+        }).fetch();
     },
     isSelected: function(roomId1, roomId2) {
         console.log(roomId1 + " - " + roomId2);

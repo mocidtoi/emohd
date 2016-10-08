@@ -52,6 +52,7 @@
     "2-scene switch": "2 phím lệnh",
     "1-light switch": "1 phím đèn",
     "1-scene switch": "1 phím lệnh",
+    "1-light 1-scene switch": "1 phím đèn, 1 phím lệnh",
     "2-way curtain switch": "Rèm hai chiều",
     "choose switch type": "Chọn mặt phím",
     "Choose switch type": "Chọn mặt phím",
@@ -84,5 +85,6 @@
     "temp":"nhiệt độ",
     "Humidity":"Độ ẩm",
     "humidity":"độ ẩm",
+    "WiFi configuration done": "Đã cấu hình WiFi thành công",
     "_":""
 }

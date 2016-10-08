@@ -24,7 +24,9 @@ kodiLoadSongs = function(callback) {
         id: 'getSongs'
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    http.get(url, callback);
+    console.log("kodiLoadSongs:url:" + url + "--");
+    console.log("kodiLoadSongs:url:" + url + "--");
+    http.get(url, Meteor.bindEnvironment(callback));
 }
 
 kodiClearPlaylist = function(id, callback) {
@@ -37,8 +39,8 @@ kodiClearPlaylist = function(id, callback) {
         id: 'clearPlaylist'
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    console.log('kodiClearPlaylist ' + url);
-    http.get(url, callback).on('error',function(err) {
+    console.log('kodiClearPlaylist:' + url + "--");
+    http.get(url, Meteor.bindEnvironment(callback)).on('error',function(err) {
         console.log(err);
     });
 }
@@ -57,9 +59,9 @@ kodiPlaylistAdd = function(plid, id) {
     };
     console.log(tempReq);
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    http.get(url, function(err, res) {
+    http.get(url, Meteor.bindEnvironment(function(err, res) {
 //        console.log(res.body);
-    });
+    }));
 }
 
 kodiPlaylistGetItems = function(plid, callback) {
@@ -75,18 +77,40 @@ kodiPlaylistGetItems = function(plid, callback) {
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
     console.log(url);
-    http.get(url, function(err, res){
+    http.get(url, Meteor.bindEnvironment(function(err, res){
         if(res && res.body) {
             var json = JSON.parse(res.body);
-            if(json.result.items) {
+            console.log(json);
+            if(json && json.result && json.result.items) {
                 json.result.items.forEach(callback);
             }
         }
-    });
+    }));
 }
 
 function getActivePlayer(callback) {
-    callback(0);
+    var tempReq = {
+        jsonrpc:'2.0',
+        method: 'Player.GetActivePlayers',
+        id: 1
+    };
+    var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
+    http.get(url, Meteor.bindEnvironment(function(err, res){
+        if(res && res.body) {
+            var json = JSON.parse(res.body);
+            console.log(json);
+            if(json && json.result && json.result.length > 0) {
+                callback(json.result[0].playerid);
+            }
+            else {
+                callback(0);
+            }
+        }
+        else {
+            console.log("GetActivePlayer:");
+            console.log(err);
+        }
+    }));
 }
 
 function KodiTracker(publisher) {
@@ -120,32 +144,46 @@ KodiTracker.prototype.start = function() {
         var url1 = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq1);
         var url2 = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq2);
         function trackSong() {
-            http.get(url1, function(err, res){
+            console.log("trackSong");
+            http.get(url1, Meteor.bindEnvironment(function(err, res){
                 if(res && res.body) {
                     var json = JSON.parse(res.body);
                     if(json.result && json.result.item) {
                         self.publisher.changed('playingItem', 0, json.result.item);
                     }
                 }
-            });
+                else {
+                    console.log("trackSong:");
+                    console.log(err);
+                }
+            }));
         }
         function trackProgress() {
-            http.get(url2, function(err, res){
+            console.log("trackProgress");
+            http.get(url2, Meteor.bindEnvironment(function(err, res){
                 if(res && res.body) {
                     var json = JSON.parse(res.body);
                     if(json.result) {
                         self.publisher.changed('progress', 0, json.result);
                     }
                 }
-            });
+                else {
+                    console.log("trackProgress:");
+                    console.log(err);
+                }
+            }));
         }
         trackSong();
+        trackProgress();
         self.timerHandle1 = Meteor.setInterval( trackSong, 20000 );
         self.timerHandle2 = Meteor.setInterval( trackProgress, 2000);
     });
 }
 KodiTracker.prototype.stop = function(){
-    Meteor.clearInterval(this.timerHandler1);
+    console.log("stop timerHandler1" + this.timerHandle1);
+    console.log("stop timerHandler2" + this.timerHandle2);
+    Meteor.clearInterval(this.timerHandle1);
+    Meteor.clearInterval(this.timerHandle2);
 }
 
 kodiPlay = function(songIdx, callback) {
@@ -163,7 +201,7 @@ kodiPlay = function(songIdx, callback) {
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
     console.log(url);
-    http.get(url, callback);
+    http.get(url, Meteor.bindEnvironment(callback));
 }
 
 kodiPlayPause = function() {
@@ -177,11 +215,11 @@ kodiPlayPause = function() {
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
     console.log(url);
-    http.get(url, function(err, res){
+    http.get(url, Meteor.bindEnvironment(function(err, res){
         console.log(url);
         console.log(err);
         if(res && res.body) console.log(res.body);
-    });
+    }));
 }
 
 kodiNext = function() {
@@ -195,11 +233,11 @@ kodiNext = function() {
         id: 'nextSong'
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    http.get(url, function(err, res){
+    http.get(url, Meteor.bindEnvironment(function(err, res){
         console.log(url);
         console.log(err);
         if(res && res.body) console.log(res.body);
-    });
+    }));
 }
 
 kodiPrevious = function() {
@@ -213,11 +251,11 @@ kodiPrevious = function() {
         id: 'previousSong'
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    http.get(url, function(err, res){
+    http.get(url, Meteor.bindEnvironment(function(err, res){
         console.log(url);
         console.log(err);
         if(res && res.body) console.log(res.body);
-    });
+    }));
 }
 
 var state = false;
@@ -234,11 +272,11 @@ kodiShuffle = function() {
         id: 'Suffle'
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    http.get(url, function(err, res){
+    http.get(url, Meteor.bindEnvironment(function(err, res){
         console.log(url);
         console.log(err);
         if(res && res.body) console.log(res.body);
-    });
+    }));
 }
 
 kodiGetVolume = function(callback) {
@@ -251,15 +289,15 @@ kodiGetVolume = function(callback) {
         id: 'getVolume'
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    http.get(url, function(err, res) {
+    http.get(url, Meteor.bindEnvironment(function(err, res) {
         console.log(url);
         if(res && res.body) {
             var json = JSON.parse(res.body);
-            if(json.result) callback(json.result.volume);
+            if(json && json.result) callback(json.result.volume);
             else callback(0);
         }
         else callback(0);
-    });
+    }));
 }
 
 kodiSetVolume = function(volume) {
@@ -272,35 +310,61 @@ kodiSetVolume = function(volume) {
         id: 'setVolume'
     };
     var url = 'http://' + kodiUser + ":" + kodiPassword + "@" + kodiIP + '/jsonrpc?request=' + JSON.stringify(tempReq);
-    http.get(url, function(err, res){
+    http.get(url, Meteor.bindEnvironment(function(err, res){
         console.log(url);
         console.log(err);
         if(res && res.body) console.log(res.body);
+    }));
+}
+
+KodiReload = function() {
+    var future = new Future();
+    kodiClearPlaylist(0, function(err, res) {
+        console.log("kodiClearPlaylist:res:" + res + "--");
+        if(res) console.log("kodiClearPlaylist:res.body:" + res.body + "--");
+        if( res && res.body ) {
+            try {
+                var json = JSON.parse(res.body);
+                console.log(json);
+                if(json && json.result=="OK") {
+                    kodiLoadSongs(function(err, res) {
+                        if(err) {
+                            console.log("Error in loadSongs");
+                        }
+                        else if (res && res.body) {
+                            var json = JSON.parse(res.body);
+                            if( json && json.result && json.result.songs ) {
+                                json.result.songs.forEach(function(song, index) {
+                                    kodiPlaylistAdd(0, song.songid);
+                                });
+                            }
+                        }
+                        future.return();
+                    });
+                }
+                else {
+                    future.return();
+                }
+            }
+            catch (e) {
+                future.return();
+            }
+        }
+        else {
+            future.return();
+        }
     });
+    future.wait();
 }
 
 Meteor.methods({
-    kodiReload: function() {
-        kodiClearPlaylist(0, function(err, res) {
-            console.log("res:" + res);
-        });
-        kodiLoadSongs(function(err, res) {
-            var json = JSON.parse(res.body);
-            if( json.result.songs ) {
-                json.result.songs.forEach(function(song, index) {
-                    kodiPlaylistAdd(0, song.songid);
-                });
-            }
-        });
-    },
+    kodiReload: KodiReload,
     kodiPlay: function(songIdx) {
         var future = new Future();
         kodiPlay(songIdx, function(err, res) {
             future.return();
         });
         future.wait();
-        kodiTracker.stop();
-        kodiTracker.start();
     },
     kodiGetVolume: function() {
         var future = new Future();
@@ -330,17 +394,18 @@ Meteor.methods({
         kodiShuffle();
     }
 });
-var kodiTracker = null;
 Meteor.publish('music', function() {
     var self = this;
     kodiPlaylistGetItems(0, function(song, index) {
         self.added('song', song.id, song);
     });
 
-    kodiTracker = new KodiTracker(self);
+    var kodiTracker = new KodiTracker(self);
     kodiTracker.start();
    
     self.onStop(function() {
+        console.log("publisher stop");
+        kodiTracker.stop();
     });
     self.ready();
 });

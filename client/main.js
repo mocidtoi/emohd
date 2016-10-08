@@ -169,7 +169,7 @@ var loadingEventHandlers = {
         }
     },
     'click #wificonfig': function() {
-        Router.go('/admin');
+        Router.go('/admin/config');
     }
 };
 
@@ -181,7 +181,7 @@ Template.LoadingScreen.helpers({
         return (Session.get('loading-screen1'))?"hide":"";
     },
     connStatus: function() {
-        if (!Meteor.status().connected && !(AdminConnection && AdminConnection.status().connected)) {
+        if (!Meteor.status().connected) {
             Session.set('status-message', 'Connecting to DHome');
             return "";
         }

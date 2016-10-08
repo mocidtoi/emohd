@@ -18,7 +18,7 @@ Template.config.events({
         netmask = instance.$('#inputMask').val();
         gateway = instance.$('#inputGW').val();
         console.log('config ' + ssid + password + dhcp + ipaddress + netmask);
-        AdminConnection.call('config', ssid, password, dhcp, ipaddress, netmask, gateway);
+        Meteor.call('config', ssid, password, dhcp, ipaddress, netmask, gateway);
         Router.go('/');
     },
     'change #profile': function(event, instance) {
@@ -49,11 +49,6 @@ Template.config.events({
 });
 Template.config.helpers({
     configs: function() {
-        if(!Configs) {
-            Configs = new Mongo.Collection('configs', {
-                connection:AdminConnection
-            });
-        }
         return Configs.find().fetch();
     }
 });

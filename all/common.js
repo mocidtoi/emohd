@@ -14,17 +14,14 @@ Constants = {
 };
 
 TOKEN=null;
-Router.configure({
-    layoutTemplate: 'ApplicationLayout',
+var homeRouteOpt = {
+    layoutTemplate:"ApplicationLayout",
     loadingTemplate: 'LoadingScreen1',
     waitOn: function() {
         console.log('Subscribe data: token=' + TOKEN);
         var res = Meteor.subscribe('data', TOKEN);
         return [ res ];
-    }
-});
-var homeRouteOpt = {
-    layoutTemplate:"ApplicationLayout",
+    },
     action: function() {
         this.render('Favorites');
         setActiveTab(1);
@@ -32,18 +29,30 @@ var homeRouteOpt = {
 };
 Router.route('/Rooms', {
     layoutTemplate:"ApplicationLayout",
+    loadingTemplate: 'LoadingScreen1',
+    waitOn: function() {
+        console.log('Subscribe data: token=' + TOKEN);
+        var res = Meteor.subscribe('data', TOKEN);
+        return [ res ];
+    },
     action: function() {
         this.render('Rooms');
         setupModalAddRoom(this);
         this.render('ModalAddDevice', {to: "modal-adddev"});
         this.render('ModalCurtainControl', {to: "modal-curtain"});
         setActiveTab(2);
-    },
+    }
 });
 Router.route('/', homeRouteOpt);
 Router.route('/Favorites', homeRouteOpt);
 Router.route('/Scenes', {
     layoutTemplate:"ApplicationLayout",
+    loadingTemplate: 'LoadingScreen1',
+    waitOn: function() {
+        console.log('Subscribe data: token=' + TOKEN);
+        var res = Meteor.subscribe('data', TOKEN);
+        return [ res ];
+    },
     action: function() {
         setActiveTab(3);
         this.render('Scenes');
@@ -52,6 +61,12 @@ Router.route('/Scenes', {
 });
 Router.route('/Notifications', {
     layoutTemplate:"ApplicationLayout",
+    loadingTemplate: 'LoadingScreen1',
+    waitOn: function() {
+        console.log('Subscribe data: token=' + TOKEN);
+        var res = Meteor.subscribe('data', TOKEN);
+        return [ res ];
+    },
     action: function() {
         Session.set("title", "Notifications");
         setActiveTab(4);
@@ -60,6 +75,12 @@ Router.route('/Notifications', {
 });
 Router.route('/More', {
     layoutTemplate:"ApplicationLayout",
+    loadingTemplate: 'LoadingScreen1',
+    waitOn: function() {
+        console.log('Subscribe data: token=' + TOKEN);
+        var res = Meteor.subscribe('data', TOKEN);
+        return [ res ];
+    },
     action: function() {
         setActiveTab(5);
         Session.set("title", TAPi18n.__("More") + " ...");
@@ -70,6 +91,12 @@ Router.route('/More', {
 
 Router.route('/Device/:gid/:id', {
     layoutTemplate:"ApplicationLayout",
+    loadingTemplate: 'LoadingScreen1',
+    waitOn: function() {
+        console.log('Subscribe data: token=' + TOKEN);
+        var res = Meteor.subscribe('data', TOKEN);
+        return [ res ];
+    },
     action: function() {
         Session.set("title", "_");
         this.render('Device');
@@ -83,6 +110,12 @@ Router.route('/Device/:gid/:id', {
 
 Router.route('/Scene/:scid', {
     layoutTemplate:"ApplicationLayout",
+    loadingTemplate: 'LoadingScreen1',
+    waitOn: function() {
+        console.log('Subscribe data: token=' + TOKEN);
+        var res = Meteor.subscribe('data', TOKEN);
+        return [ res ];
+    },
     action: function() {
         Session.set("title", "_");
         this.render("Scene");
@@ -94,6 +127,7 @@ Router.route('/Scene/:scid', {
 });
 Router.route('/Musics', {
     layoutTemplate:"ApplicationLayout",
+    loadingTemplate: 'LoadingScreen1',
     waitOn: function() {
         console.log('Subscribe music: token=' + TOKEN);
         var res = Meteor.subscribe('music', TOKEN);
@@ -114,24 +148,19 @@ Router.route('/Musics', {
 /*=======================================================
  *  ADMINISTRATION MODE
  *=======================================================*/
-Router.configure({
-    layoutTemplate: 'AdminLayout'
-});
-
 Router.route('/admin', {
     layoutTemplate: 'AdminLayout',
     loadingTemplate: 'AdminLoading',
     action:function() {
         this.render('navbar', {to: "navbar"});
-        this.render('signin');
+        this.render('config');
     },
     waitOn: function() {
-        if(!AdminConnection) {
-            AdminConnection=DDP.connect(Constants.ADMIN_URL);
-        }
-        Meteor.setTimeout(function(){
-            if(!notifier) adminNotifier();
-        }, 1000);
+        console.log('waitOn Admin');
+        var res = Meteor.subscribe('netconfigs');
+        return [
+            res
+        ];
     }
 });
 Router.route('/admin/signin', {
@@ -142,12 +171,11 @@ Router.route('/admin/signin', {
         this.render('signin');
     },
     waitOn: function() {
-        if(!AdminConnection) {
-            AdminConnection=DDP.connect(Constants.ADMIN_URL);
-        }
-        Meteor.setTimeout(function(){
-            if(!notifier) adminNotifier();
-        }, 1000);
+        console.log('waitOn Admin');
+        var res = Meteor.subscribe('netconfigs');
+        return [
+            res
+        ];
     }
 });
 Router.route('/admin/config', {
@@ -159,19 +187,21 @@ Router.route('/admin/config', {
         this.render('config');
     },
     waitOn: function() {
-        if(!AdminConnection) {
-            AdminConnection=DDP.connect(Constants.ADMIN_URL);
-        }
-        Meteor.setTimeout(function(){
-            if(!notifier) adminNotifier();
-        }, 1000);
-        return AdminConnection.subscribe('netconfigs');
+        console.log('waitOn Admin');
+        var res = Meteor.subscribe('netconfigs');
+        return [
+            res
+        ];
     }
 });
 Router.route('/admin/Guide', {
     layoutTemplate: 'AdminLayout',
     loadingTemplate: 'AdminLoading',
-    name: "Guide",
+    action:function() {
+        this.layout('AdminLayout');
+        this.render('navbar', {to: "navbar"});
+        this.render('Guide');
+    },
     waitOn:null
 });
 
